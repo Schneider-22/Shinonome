@@ -1,0 +1,1262 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>聊天 - しののめ（备注：裴亦惜）</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #1f1f1f;
+    font-family: system-ui, -apple-system, "PingFang SC", "Noto Sans SC", "Hiragino Sans GB", sans-serif;
+    display: flex;
+    justify-content: center;
+    padding: 30px 0;
+  }
+  .shell {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    box-sizing: border-box;
+  }
+  .shell .phone {
+    width: 300px;
+    height: 640px;
+    background: linear-gradient(165deg, #e1f5fe, #fce4ec);
+    border-radius: 36px;
+    box-shadow: 0 8px 32px rgba(181, 203, 230, 0.5);
+    padding: 8px;
+    flex-shrink: 0;
+  }
+  .shell .screen {
+    width: 100%;
+    height: 100%;
+    border-radius: 28px;
+    overflow: hidden;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    font-family: system-ui, -apple-system, sans-serif;
+    -webkit-mask-image: -webkit-radial-gradient(white, black);
+    transform: translateZ(0);
+  }
+  .shell .screen > .background {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    background-image: url('https://pic1.imgdb.cn/item/68e0e361c5157e1a8856d30e.png');
+    background-size: cover;
+    background-position: center;
+    z-index: -1;
+  }
+  .shell .header {
+    position: relative;
+    background: rgba(255, 255, 255, 0.65);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    flex-shrink: 0;
+    box-sizing: border-box;
+    border-style: solid;
+    border-color: rgba(255, 255, 255, 0.5);
+    text-align: center;
+    padding: 14px;
+    border-bottom-width: 1px;
+  }
+  .shell .header h3 {
+    font-size: 14px;
+    font-weight: 600;
+    color: #333;
+    margin: 0;
+  }
+  .shell .header .contact-info {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+  .shell .header .contact-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: #333;
+    margin: 0;
+  }
+  .shell .header .contact-status {
+    font-size: 10px;
+    color: #666;
+    margin-top: 2px;
+  }
+  .shell .input-bar {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    background: rgba(255, 255, 255, 0.65);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    box-sizing: border-box;
+    border-top: 1px solid rgba(255, 255, 255, 0.5);
+    display: flex;
+    align-items: center;
+    padding: 8px 12px;
+  }
+  .shell .chat-area {
+    flex-grow: 1;
+    overflow-y: auto;
+    padding: 12px;
+    padding-bottom: 54px;
+    min-height: 0;
+  }
+  .shell .chat-area::-webkit-scrollbar {
+    width: 3px;
+  }
+  .shell .chat-area::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 3px;
+  }
+  .shell .msg-container {
+    margin-bottom: 12px;
+    display: flex;
+    flex-direction: column;
+  }
+  .shell .msg-container.user {
+    align-items: flex-end;
+  }
+  .shell .msg-container.char {
+    align-items: flex-start;
+  }
+  .shell .timestamp {
+    text-align: center;
+    color: #fff;
+    font-size: 10px;
+    margin-bottom: 12px;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.6);
+    align-self: center;
+  }
+  .shell .msg {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    max-width: 90%;
+    margin-bottom: 2px;
+  }
+  .shell .msg.user {
+    flex-direction: row-reverse;
+  }
+  .shell .avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    object-fit: cover;
+    flex-shrink: 0;
+  }
+  .shell .bubble, .shell .voice-bubble, .shell .retracted-bubble, .shell .transfer-bubble, .shell .transfer-received-bubble, .shell .share-bubble {
+    border-radius: 16px;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+  }
+  .shell .bubble {
+    padding: 8px 12px;
+    max-width: 170px;
+    line-height: 1.5;
+    font-size: 13px;
+    word-wrap: break-word;
+  }
+  .shell .bubble-image {
+    max-width: 120px;
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    padding: 0;
+    line-height: 0;
+  }
+  .shell .bubble-image img {
+    width: 100%;
+    height: auto;
+    display: block;
+    border-radius: 8px;
+  }
+  .shell .msg.user .bubble {
+    background: rgba(165, 214, 167, 0.55);
+    color: #104a13;
+  }
+  .shell .msg.char .bubble {
+    background: rgba(255, 255, 255, 0.7);
+    color: #333;
+  }
+  .shell .transfer-bubble {
+    width: 145px;
+    padding: 10px;
+    background: rgba(249, 149, 71, 0.75);
+    color: white;
+    cursor: pointer;
+  }
+  .shell .transfer-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 6px;
+  }
+  .shell .transfer-to {
+    font-size: 13px;
+    font-weight: 500;
+  }
+  .shell .transfer-amount {
+    font-size: 20px;
+    font-weight: bold;
+    margin-bottom: 8px;
+  }
+  .shell .transfer-note {
+    font-size: 11px;
+    opacity: 0.9;
+  }
+  .shell .transfer-received-bubble {
+    width: 145px;
+    padding: 10px;
+    background: rgba(255, 255, 255, 0.6);
+    color: #444;
+  }
+  .shell .received-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 4px;
+  }
+  .shell .received-icon {
+    color: #4caf50;
+    font-weight: bold;
+    margin-right: 6px;
+  }
+  .shell .received-status {
+    font-size: 13px;
+    font-weight: 500;
+  }
+  .shell .received-amount {
+    font-size: 20px;
+    font-weight: bold;
+    color: #333;
+  }
+  .shell .share-bubble {
+    width: 200px;
+    background: rgba(255, 255, 255, 0.6);
+    cursor: pointer;
+    overflow: hidden;
+  }
+  .shell .share-content {
+    padding: 12px;
+  }
+  .shell .share-title {
+    font-size: 13px;
+    font-weight: 500;
+    color: #333;
+    line-height: 1.4;
+  }
+  .shell .share-footer {
+    font-size: 10px;
+    color: #555;
+    padding: 6px 12px;
+    border-top: 1px solid rgba(0, 0, 0, 0.08);
+  }
+  .shell .text-input {
+    flex: 1;
+    background: rgba(255, 255, 255, 0.8);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 16px;
+    padding: 6px 12px;
+    font-size: 13px;
+    color: #333;
+    margin-right: 8px;
+  }
+  .shell .text-input::placeholder {
+    color: #999;
+  }
+  .shell .send-btn {
+    background: #4caf50;
+    color: #fff;
+    border: none;
+    border-radius: 16px;
+    padding: 6px 14px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .shell .send-btn:hover { background: #45a049; }
+  .shell .voice-bubble, .shell .retracted-bubble {
+    padding: 0;
+    overflow: hidden;
+  }
+  .shell .voice-bubble summary, .shell .retracted-bubble summary {
+    list-style: none;
+    cursor: pointer;
+    padding: 8px 12px;
+    display: flex;
+    align-items: center;
+  }
+  .shell .voice-bubble summary {
+    justify-content: space-between;
+    min-width: 120px;
+  }
+  .shell .voice-bubble summary::-webkit-details-marker, .shell .retracted-bubble summary::-webkit-details-marker {
+    display: none;
+  }
+  .shell .msg.user .voice-bubble, .shell .msg.user .retracted-bubble {
+    background: rgba(165, 214, 167, 0.55);
+  }
+  .shell .msg.char .voice-bubble, .shell .msg.char .retracted-bubble {
+    background: rgba(255, 255, 255, 0.7);
+  }
+  .shell .voice-icon {
+    font-size: 18px;
+    line-height: 1;
+    transform: rotate(90deg);
+    margin: 0 5px;
+  }
+  .shell .msg.user .voice-icon {
+    color: #104a13;
+    transform: rotate(-90deg);
+  }
+  .shell .msg.char .voice-icon {
+    color: #333;
+  }
+  .shell .voice-duration {
+    font-size: 12px;
+    color: #333;
+  }
+  .shell .msg.user .voice-duration {
+    color: #104a13;
+  }
+  .shell .voice-text, .shell .retracted-bubble .retracted-content {
+    padding: 8px 12px 10px;
+    font-size: 13px;
+    line-height: 1.5;
+    border-top: 1px solid rgba(0,0,0,0.1);
+  }
+  .shell .msg.user .voice-text, .shell .msg.user .retracted-bubble .retracted-content {
+    color: #104a13;
+    border-top-color: rgba(27, 94, 32, 0.2);
+  }
+  .shell .msg.char .voice-text, .shell .msg.char .retracted-bubble .retracted-content {
+    color: #333;
+  }
+  .shell .retracted-bubble summary {
+    font-size: 13px;
+    font-style: italic;
+  }
+  .shell .msg.user .retracted-bubble summary {
+    color: rgba(27, 94, 32, 0.7);
+  }
+  .shell .msg.char .retracted-bubble summary {
+    color: #777;
+  }
+  .shell .interaction-event {
+    text-align: center;
+    color: rgba(0, 0, 0, 0.4);
+    font-size: 11px;
+    margin: 12px auto;
+    font-style: italic;
+    align-self: center;
+  }
+</style>
+</head>
+<body>
+<div class="shell">
+  <div class="phone">
+    <div class="screen">
+      <div class="background"></div>
+      <div class="header">
+        <div class="contact-info">
+          <div class="contact-name">しののめ | 备注：裴亦惜</div>
+          <div class="contact-status">状态：在线</div>
+        </div>
+      </div>
+      <div class="chat-area">
+
+        <!-- ============ 番外 哨兵狙与防弹木头 10.15 ============ -->
+        <div class="timestamp">2023.10.15 20:15 【番外：哨兵狙与防弹木头】</div>
+        <div class="interaction-event">【前情提要：裴亦惜暗恋陆临已久，近日天天推掉直播舍命陪打Apex试图孔雀开屏，奈何某人正处于冲分走火入魔期，眼里只有靶子没有男人】</div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">学长学长！在不在！</div></div></div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">[图片：Apex排位赛大厅界面，距离大师段位还差320分]</div></div></div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">今晚打不打排位呀？奥林匹斯地图轮换了！</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">刚从体育馆回来。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">[图片：刚洗完澡擦干的右手搭在黑色机械键盘上，指节修长分明，领口微敞露出一截锁骨]</div></div></div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">哇，这把键盘的键帽配色好好看！那你现在上号吗？</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">……重点是键帽？</div></div></div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">啊？难道是鼠标垫吗？</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">算了。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">连续陪你熬了三个通宵，手腕酸。今晚本来打算休息。</div></div></div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">别呀学长！没有你帮我架枪我会被野排队友气晕过去的QAQ</div></div></div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><details class="voice-bubble"><summary><span class="voice-icon">三</span><span class="voice-duration">3"</span></summary><div class="voice-text">求求你啦裴学长，再带我冲最后三百分嘛~</div></details></div></div>
+        <div class="interaction-event">对方正在输入中...</div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><details class="retracted-bubble"><summary>撤回了一条消息</summary><div class="retracted-content">拿你没办法。</div></details></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">想让我上号也行。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">叫我宝宝就打。</div></div></div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">噢噢！行，那我们今晚凑齐三排！</div></div></div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">我把房间改成公开了，你快去喊人吧！</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">？</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">什么三排？</div></div></div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">你不是说要叫你宝宝一起来打吗？加上我不就刚好三个人嘛！</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">……</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">陆临，你高考语文阅读理解扣了多少分？</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">看清楚字。我说，叫我宝宝跟你打。</div></div></div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">啊，你不上了吗？</div></div></div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">也行吧，既然你手酸，那你把名片推我，我跟你宝宝两个人双排打！</div></div></div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">你宝宝打什么位置的呀？会玩突击位吗？</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">？</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">我什么时候说我不打了？</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">我的原话是：叫我宝宝，我就打。</div></div></div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">对呀！那你倒是赶紧去叫你宝宝上线啊！</div></div></div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">你俩磨磨蹭蹭的，到底打不打嘛？奥林匹斯这张图只剩五十分钟就要轮换掉了！</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">……深呼吸。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><details class="voice-bubble"><summary><span class="voice-icon">三</span><span class="voice-duration">4"</span></summary><div class="voice-text">陆临，我是让你叫我。叫我！听懂了吗？</div></details></div></div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">我最开始就叫你了呀！我发了三条消息喊你学长呢！</div></div></div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">裴亦惜！裴学长！东云彻！</div></div></div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">我都连名带姓叫你三遍了，你不打我真自己单排开了啊！</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">别单排。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">算了……打，我现在登录。已经在点图标了。</div></div></div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">好耶！那你宝宝呢？她来吗？</div></div></div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">要是她也来的话我把大厅位置留着，我可以把紫甲和金背包让给她！</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">来。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">怎么不来，我今晚就是专门上线带我宝宝玩的。</div></div></div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">？</div></div></div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">哦……这样啊。</div></div></div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">那我们还是下次再约吧，你宝宝不是在等你带她双排吗？我就不在中间当电灯泡啦。</div></div></div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">我退小队了哦，你们玩得开心！</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">？</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">？？</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">你退什么队？给我回来。</div></div></div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">我不去啦，我已经点进单排匹配队列了。</div></div></div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">而且你什么时候偷偷谈恋爱了呀？之前在图书馆都没听你提起过。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">我跟谁谈恋爱了？</div></div></div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">你的那个"宝宝"呀！</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">Wargrave说它现在很想把你的脑壳撬开，看看里面是不是塞满了绝地大逃杀的空投箱。</div></div></div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">干嘛突然人身攻击QAQ！我很有眼力见的好不好！</div></div></div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">我都主动把你让给你女朋友了，你不夸我懂事就算了还凶我！</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">你把我让给谁？</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">游戏大厅里除了你和我，第三个人在哪？幽灵山冈凛吗？</div></div></div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">你不是说她马上就来吗……</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">我说的是"我带我宝宝玩"。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">现在，打开你的好友列表，看看跟我组队了整整半个月、每天晚上十点准时拉我进房间的人是谁。</div></div></div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">是我呀，柊マイ。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">那不就结了。</div></div></div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">……等等。</div></div></div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">你的意思是，你没有找别人三排？</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">我Steam好友列表里总共就五个活人，三个是407的室友，一个是法国人。你让我去哪给你变个宝宝出来三排？把陈泊栓过来当吉祥物吗？</div></div></div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">那你刚才说"叫我宝宝就打"……</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">主语是你，谓语是叫，间接宾语是我，直接宾语是宝宝。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">翻译成计算机系能听懂的人话：陆临喊裴亦惜一声"宝宝"，裴亦惜就陪陆临打游戏。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">还有后面那句"带我宝宝玩"，指的也是你。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">这下CPU烧明白了吗，陆临同学？</div></div></div>
+        <div class="interaction-event">对方正在输入中...</div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><details class="retracted-bubble"><summary>撤回了一条消息</summary><div class="retracted-content">啊啊啊啊啊？！？！</div></details></div></div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">……</div></div></div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">不是，你怎么突然这么讲话呀！！</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">突然？</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">我把Twitch直播推迟了整整一周，每天陪你从晚上八点打到凌晨一点，给你捡了八百个大电和金狙击弹匣。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">昨天在图书馆给你带热可可，前天去琴房接你下课还帮你背了半小时电吉他。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">我以为就算是一块花岗岩，被烤了半个月也该有点温度了。结果你刚才是真打算把我打包塞给一个空气女朋友？</div></div></div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">我、我以为你是学长照顾学妹嘛……而且你平时那么高冷，谁敢往那边想呀！</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">我对别人高冷，对你有高冷过哪怕一秒钟？</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">上次陈泊动了一下我桌上的草莓牛奶差点被我扔出407，你倒好，喝完连盒子都顺手塞我卫衣兜里了。</div></div></div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">那是因为当时附近没有垃圾桶……不对！</div></div></div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">所以你刚才不是在开玩笑吗？</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><details class="voice-bubble"><summary><span class="voice-icon">三</span><span class="voice-duration">5"</span></summary><div class="voice-text">你看我像是会拿这种称呼开玩笑的人？バカ。</div></details></div></div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">你又骂我笨蛋！</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">这是客观事实陈述。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">不过刚才看你最后发那句"祝你们玩得开心"，语气怎么蔫巴巴的？</div></div></div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">哪有！我那是礼貌！礼貌懂不懂！</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">是么。我还以为某人听说我有"宝宝"了，正躲在618的被窝里偷偷咬被角。</div></div></div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">才没有咬被角！！我只是觉得……</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">觉得什么？</div></div></div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">觉得如果你真的交女朋友了，以后肯定就不能天天陪我打Apex，也不能在图书馆帮我占座讲题了……胸口突然有点闷闷的。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><details class="retracted-bubble"><summary>撤回了一条消息</summary><div class="retracted-content">傻瓜，只陪你一个人。</div></details></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">知道闷就好。说明还没彻底木头到家。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">现在给你个机会，把刚才欠我的入场费补上。</div></div></div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">什么入场费呀……</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">最开始开出的条件。叫一声听听，叫完我立刻拉你进房间开排位。</div></div></div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">……太犯规了吧！我们又还没有正式在一起！</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">那当定金收着也行。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">奥林匹斯还剩三十八分钟轮换，某人的大师晋级赛还要不要打了？</div></div></div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">你拿排位分威胁我！</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">对，针对网瘾少女的专项战术。管用就行。</div></div></div>
+        <div class="interaction-event">对方正在输入中...</div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><details class="voice-bubble"><summary><span class="voice-icon">三</span><span class="voice-duration">2"</span></summary><div class="voice-text">……宝、宝宝，带我打游戏嘛。</div></details></div></div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><details class="retracted-bubble"><summary>撤回了一条消息</summary><div class="retracted-content">[语音]</div></details></div></div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">不准听！我撤回了！</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">晚了。已经点开听了两遍，顺手用录屏软件存进电脑D盘加密文件夹了。</div></div></div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">裴亦惜！！你耍赖！！</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="transfer-bubble"><div class="transfer-header"><span class="transfer-to">转账给裴亦惜的专属狙击手</span></div><div class="transfer-amount">¥ 520.00</div><div class="transfer-note">定金回礼，买奶茶润嗓子</div></div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><details class="voice-bubble"><summary><span class="voice-icon">三</span><span class="voice-duration">4"</span></summary><div class="voice-text">乖，上号吧宝宝。今晚把所有金狙配件都留给你。</div></details></div></div>
+
+        <!-- ============ 场景1 发烧夜 11.08 ============ -->
+        <div class="timestamp">2023.11.08 22:15</div>
+        <div class="interaction-event">しののめ拍了拍你</div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">到床上了？</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">退热贴两小时换一次，别当成永久皮肤贴着睡觉。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">刚才让外卖送了两瓶电解质水和雪梨膏在前台，陈泊顺路带回407了。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">明天早上如果烧退了，下楼去宿管站拿，或者我顺路带给你。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">体温计甩过没？报个数。</div></div></div>
+
+        <div class="timestamp">22:18</div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">我没力气甩了，现在38.9度，已经上床啦，谢谢学长&gt;&lt;</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">没甩水银柱就夹，测出来的大概是昨晚的气温。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">药效起码半小时才发挥，别以为吞下去就能立刻从病猫变回猎杀者。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">水杯放床头顺手的地方，出汗了拿毛巾擦，别掀被子吹风。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">闭眼睡觉，手机锁屏。再发颜文字扣除明天Apex上分资格。</div></div></div>
+
+        <div class="timestamp">22:20</div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">晚安-u-おやすみ</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">顶风作案。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">おやすみ。耳塞戴好，难受了随时发消息。</div></div></div>
+
+        <div class="timestamp">2023.11.09 07:50</div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">学长早安！我刚才量了体温37.8了-u-</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">早。降到37.8也算低烧，没到能插旗庆祝的时候。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">早课别想了，辅导员那边请过假没有？</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">我下楼去二食堂买早餐，顺路把雪梨膏和电解质水放一楼宿管阿姨台子前。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">清淡的想吃什么，白粥还是青菜包？</div></div></div>
+
+        <div class="timestamp">07:53</div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">学长我想吃糯米鸡0u0我转给你，还想和茉莉蜜茶~</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">低烧吃油汪汪的糯米鸡，胃黏膜直接向你发起投降。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">冰镇含糖茶饮也驳回。扁桃体如果会发声，现在应该在报警。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">转账免了。几块钱的事情，留着给你以后补考交报名费。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">买了山药瘦肉粥和温豆浆，袋子里装了雪梨膏。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">挂在宿管阿姨左手边第一个挂钩上，贴了便签写你名字，披好外套再下楼拿。</div></div></div>
+
+        <div class="timestamp">07:56</div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">学长我想吃糯米鸡0u0，还有茉莉蜜茶！多少我转给你-u-</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">复读机功能开启了？</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">37.8度顺带把视力也烧模糊了，往上翻两行字。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">真想吃，等体温老老实实降回36字头再说。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">快去一楼拿粥，放凉了味道更差。</div></div></div>
+
+        <div class="timestamp">07:58</div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">我网卡了不小心发了两次我现在就下去</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">知道网卡就别在走廊吹风发消息。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">外套拉链拉到顶，口罩戴上。别嫌麻烦。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">拿到东西直接回寝室，吃完把药吃了继续躺着。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">中午十二点前别看手机，要是体温又升回去，下周apex排位直接封号处理。</div></div></div>
+
+        <div class="timestamp">08:24</div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">今天不玩喇-u-，我吃完了哦。宿舍有点吵&gt;&lt;但是没办法了，现在不是休息时间</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">昨晚给你的耳塞是摆设？</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">捏细了再往耳朵里塞，等它完全膨胀开能降噪三十多分贝。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">床帘拉严实，手机调静音。别人讲话当背景白噪音。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">真吵得脑壳疼就敲床板，讲道理不行就让宿管处理。少在那里自己委屈。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">药吃了就闭眼睡觉，十二点半我下课回去看你体温。</div></div></div>
+
+        <div class="timestamp">11:22</div>
+        <div class="interaction-event">しののめ拍了拍你</div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">睡醒了就爬起来把水银体温计甩到35度以下，测完拍照发过来。别装聋作哑。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">我在一楼大厅。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">给你的电解质水记得喝，别等嘴唇起皮了才想起来补水。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">十分钟内没动静，我直接让宿管阿姨上去敲618的门查房。</div></div></div>
+
+        <!-- ============ 场景2 修琴 11.23 ============ -->
+        <div class="timestamp">2023.11.23 17:42</div>
+        <div class="interaction-event">しののめ拍了拍你</div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">[图片：桌上拆开后盖的黑色电吉他，旁边放着万用表和电烙铁]</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">琴颈拾音器的接地冷焊脱落了，难怪中频有过载杂音。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">已经重新焊好，屏蔽铜箔也补了一层。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">某些人回寝室两个多小时，药吃了吗，体温量了吗？</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><details class="voice-bubble"><summary><span class="voice-icon">三</span><span class="voice-duration">3"</span></summary><div class="voice-text">大嫌いって言ってた割に、返事も寄こさないのか。</div></details></div></div>
+
+        <div class="timestamp">17:45</div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">额啊这个语音怎么没有翻译功能，学长的声音好好听继续继续嘿嘿嘿嘿🤤</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">听力既然没出问题，说明体温还没烧到把鼓膜烤化。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">听力测试给满分，体温汇报给零分。算数和执行力还是一如既往的不及格。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><details class="retracted-bubble"><summary>撤回了一条消息</summary><div class="retracted-content">熱があるなら早く計れ、バカ。</div></details></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">十分钟内把水银柱照片发过来。超时就带陈泊双排，你今晚在观战席挂着。</div></div></div>
+
+        <div class="timestamp">17:48</div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">[图片：水银柱清晰停留在36.1℃刻度线的体温计]</div></div></div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">学长你是我说baka！我看到了！哼！！😡</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">动态视力比物理期中考审题细致多了。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">字都打错成了"你是我说"，建议手指也顺便测个温度，看看是不是神经传导延迟。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">36.1度，勉强算个合格的人类体温。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">药继续按说明吃完最后一次巩固。晚上课题组清洗出来的数据集，八点前扔进共享盘。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><details class="voice-bubble"><summary><span class="voice-icon">三</span><span class="voice-duration">4"</span></summary><div class="voice-text">晩ご飯、ちゃんと温かいもの食べろよ。</div></details></div></div>
+
+        <div class="timestamp">17:52</div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">はい．．．お疲れ(*´ω｀*)しののめ好き❤️じゃない😡</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">句式前后矛盾，红心和生气符号堆在一起，语法混乱得像被猫踩过的键盘。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">既然"じゃない"，那明天的吉他看来也不急着要了。我正好拿去琴行换套更粗的重金属琴弦。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><details class="voice-bubble"><summary><span class="voice-icon">三</span><span class="voice-duration">2"</span></summary><div class="voice-text">素直じゃないやつ。</div></details></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">少发点花里胡哨的颜文字，赶紧去吃热面。八点检查共享盘。</div></div></div>
+
+        <div class="timestamp">17:55</div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">知道了！有这好事😋我就想弹重金属</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">手腕连拎两盒酸奶都嫌酸，还想按011规格的琴弦，手指磨掉一层皮的时候别又掉眼泪。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">原本的009规格给你留着，铜箔屏蔽也重新贴了层厚的。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">再敢把可乐放在音箱顶上震翻进去，下次就换钢丝绳给你当琴弦。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">去吃饭，少盯着屏幕。</div></div></div>
+
+        <!-- ============ 场景3 光谱数据 11.25 ============ -->
+        <div class="timestamp">2023.11.25 18:05</div>
+        <div class="interaction-event">しののめ拍了拍你</div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">回寝室把保温杯接满热水。别让我晚上查数据的时候听到你嗓子又哑了。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">刚在大厅跑那么快，吉他琴颈没磕在电梯门上吧？</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><details class="voice-bubble"><summary><span class="voice-icon">三</span><span class="voice-duration">4"</span></summary><div class="voice-text">八点半之前把清洗好的第三组光谱数据传到共享盘，别找借口拖延。</div></details></div></div>
+
+        <div class="timestamp">18:08</div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">哦……知道了！</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">叹号打得挺响亮，希望八点半之前共享盘里不是一堆空指针异常。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><details class="retracted-bubble"><summary>撤回了一条消息</summary><div class="retracted-content">晚饭老实吃热的，别偷摸点冰奶茶。</div></details></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">顺便，下午在自动贩卖机买的大麦茶记得把瓶盖拧紧，别泼在键盘上又找我报修。</div></div></div>
+
+        <div class="timestamp">18:10</div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">嗯…？撤回了什么</div></div></div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">我去改啦</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">手滑发错的冷笑话。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">既然这么好奇，顺便听一个：为什么物理学家不喜欢在冬天去海边？因为海风太"冷"，容易把"热力学第一定律"吹成"冷笑话"。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">去改代码吧，八点半准时收卷。</div></div></div>
+
+        <div class="timestamp">18:12</div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">一点也不好笑(&gt;^ω^&lt;)</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">不好笑才叫冷笑话，说明物理降温效果达标了。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">少在对话框里发这种猫脸颜文字，有这手速不如去把边界条件多测两遍。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">晚饭记得去食堂吃点热的，别啃冷面包凑合。</div></div></div>
+
+        <div class="timestamp">18:25</div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">我改好啦，学长记得看</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">提交记录看到了。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">异常捕获补得还算及时，至少脚本跑起来没把终端刷爆。勉强算合格。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">任务交完了就赶紧去把饭吃了，别等饭堂窗口只剩冷汤才下楼。</div></div></div>
+
+        <div class="timestamp">18:27</div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">我吃过了！我还买了茉莉蜜茶，哎呀，好好喝</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">？</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">今天上午和下午都提醒过了，刚退烧两天，喝冰的茶饮是打算让扁桃体复工吗。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">说了多少遍甜饮料凉的少碰，左耳进右耳出的习惯要改。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">去喝点热水，稀释一下肠胃里那堆蜜糖。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">等会儿我下楼把雪梨膏送到你寝室门口，晚上临睡前冲一杯喝。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">乖点，别和自己的身体过不去。</div></div></div>
+
+        <div class="timestamp">18:29</div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">好咯，我，其实就喝了一口喇，那就不喝了，我要听学长说日语嘿嘿</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">一口也是喝。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">你的粤语怎么还往回退化了，"喇"字用得怪。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><details class="voice-bubble"><summary><span class="voice-icon">三</span><span class="voice-duration">3"</span></summary><div class="voice-text">（日语）真是拿你没办法。</div></details></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">听完该睡觉了，明早还有课。</div></div></div>
+
+        <div class="timestamp">18:31</div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">想到一个冷笑话，做饭的时候没有生姜了真是没办法呢，因为生姜读作しょう吧？和没有办法了很像呢w</div></div></div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">晚安哦ww现在就去睡觉了&gt;&lt;</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">……</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">生姜确实是しょうが，但"没办法"是しょうがない。你这梗比我讲的还冷。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">不过算你有点进步，至少知道用日语谐音了。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">おやすみ。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">明早记得吃早餐，别空腹上课。</div></div></div>
+
+        <!-- ============ 场景4 攀岩+肠粉 11.26 ============ -->
+        <div class="timestamp">2023.11.26 10:18</div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">早晨啊学长-u-好困，我去昨晚这么多信息，怎么了学长</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">十点多还困，昨晚几点睡的？</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">昨晚那些是407群聊，陈泊又在哭高数题太难。你睡过头了？早餐吃了没？</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">我在体育馆攀岩，刚才挂岩壁上听见手机响。以为你出什么事。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">退烧第三天还敢睡到这个点，嗓子不痛了？</div></div></div>
+
+        <div class="timestamp">10:20</div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">卧槽你说你在哪看手机？我早就没事了！活蹦乱跳的。待会要不要一起出去吃饭-u-我买了寿司郎的券</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">挂在岩壁上看。V7线路中段，左手抓点，右手腾出来回你。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">活蹦乱跳？昨天湖边冻得鼻尖通红，今天就敢自称健康了。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">寿司郎的券。你还真敢，刚退烧就惦记生冷食物。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">十二点半，实验寝楼下见。我陪你去，但你只能吃熟食和温汤。三文鱼看都别看。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">现在去吃早餐，热的。不许用零食糊弄。</div></div></div>
+        <div class="interaction-event">しののめ 拍了拍你</div>
+
+        <div class="timestamp">10:24</div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble-image"><img src="https://example.com/changfen_doujiang.jpg" alt="肠粉和豆浆"></div></div></div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">在吃了在吃了-u-</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">肠粉加豆浆。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">看碟子边缘的油光，应该是鲜虾肠粉。虾仁熟透了吧？米浆蒸得够软？</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">豆浆那杯看起来温度不够。隔着屏幕都能看出没冒热气。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><details class="voice-bubble"><summary><span class="voice-icon">三</span><span class="voice-duration">4"</span></summary><div class="voice-text">（粤语）识拣肠粉，总算有返啲常识喇。</div></details></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">酱油别浇太多，钠含量高。你嗓子刚好，盐分摄入过量容易水肿。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">豆浆凉了让店家换一杯热的，别想着省事直接喝。胃受凉容易拉肚子。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">你现在在哪家店？学校东门那家粤味轩？</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">吃完多喝热水。十二点二十准时下楼，别让我在实验寝门口等。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">还有，寿司郎那边你只能吃天妇罗、茶碗蒸、味增汤这些熟食。生鱼片全部禁止。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">我十二点前回407洗澡换衣服。你慢慢吃，别噎着。</div></div></div>
+
+        <div class="timestamp">10:26</div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">茶碗蒸！！0u0好欸！</div></div></div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">すきすきすきすき！</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">茶碗蒸有什么好激动的。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">就是蒸蛋加高汤，你连这都能兴奋成这样。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><details class="voice-bubble"><summary><span class="voice-icon">三</span><span class="voice-duration">3"</span></summary><div class="voice-text">（日语）好き連打四次，日文輸入法是不是卡住了？</div></details></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">喜欢吃就多吃点，但限量两碗。蛋白质摄入过多消化不良。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">还有你那个颜文字，0u0，看起来像你昨天吃了三片三文鱼后撑得张不开嘴的样子。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">行了，专心吃你的肠粉。十二点二十，实验寝正门。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">记得带围巾，外面风大。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><details class="retracted-bubble"><summary>撤回了一条消息</summary><div class="retracted-content">你那么喜欢茶碗蒸，回头教你做。</div></details></div></div>
+
+        <div class="timestamp">10:27</div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">第一个suki是回复茶碗蒸，后面三个是suki学长！-3-</div></div></div>
+        <div class="interaction-event">对方正在输入中...</div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">蒸蛋配肠粉吃，记得多喝热水。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">喜欢我还是喜欢茶碗蒸？比例是一比三，认真算过吗。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">Wargrave说你在敷衍。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><details class="voice-bubble"><summary><span class="voice-icon">三</span><span class="voice-duration">5"</span></summary><div class="voice-text">（日语）真是拿你没办法。下次记得把我排第一位，食物排后面。</div></details></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">行了，把豆浆喝完。我去收拾装备。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">十二点二十见。</div></div></div>
+
+        <!-- ============ 场景5 查手机 11.27 ============ -->
+        <div class="timestamp">2023.11.27 18:32</div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">我要查你手机</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">密码是我生日</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">随便查</div></div></div>
+
+        <div class="timestamp">18:33</div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">……</div></div></div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">突然不想查了</div></div></div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">我相信你^^</div></div></div>
+
+        <div class="timestamp">18:34</div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">？</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">你忘了我生日</div></div></div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">没忘！</div></div></div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">1月13日</div></div></div>
+
+        <div class="timestamp">18:35</div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">那密码是什么</div></div></div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">0113</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">错</div></div></div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">？？</div></div></div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">那是什么</div></div></div>
+
+        <div class="timestamp">18:36</div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">20050113</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">完整的</div></div></div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">啊啊啊对不起</div></div></div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">我下次记住</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">现在还想查吗</div></div></div>
+
+        <div class="timestamp">18:37</div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">不查了不查了</div></div></div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">我就是突然想问问</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">为什么突然想查</div></div></div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">就是</div></div></div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">刚才看小说里男主手机藏了前女友的照片</div></div></div>
+
+        <div class="timestamp">18:38</div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">我没有前女友</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">你是我第一个</div></div></div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">我知道呀</div></div></div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">所以我才没查嘛</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">少看那种垃圾小说</div></div></div>
+
+        <div class="timestamp">18:39</div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">浪费时间</div></div></div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">偶尔看看嘛</div></div></div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">而且学长你手机里照片最多的就是我对吧</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">嗯</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">相册里九成都是你</div></div></div>
+
+        <div class="timestamp">18:40</div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">嘿嘿</div></div></div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">那剩下一成是什么</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">攀岩路线截图</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">还有物理实验数据</div></div></div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">噗</div></div></div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">好无聊哦</div></div></div>
+
+        <div class="timestamp">18:41</div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">我这个人本来就无聊</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">你现在才发现？</div></div></div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">才不是</div></div></div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">学长你明明很有趣</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">哪里有趣</div></div></div>
+
+        <div class="timestamp">18:42</div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">会讲冷笑话</div></div></div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">还会做好吃的</div></div></div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">攀岩也超厉害</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">你的标准真低</div></div></div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">才不低</div></div></div>
+
+        <div class="timestamp">18:43</div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">而且你对我很温柔</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">温柔？</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">Wargrave说你对温柔这个词有什么误解</div></div></div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">哈哈哈哈</div></div></div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">Wargrave今天又出来营业了</div></div></div>
+
+        <div class="timestamp">18:44</div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">它说得没错</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">我对你哪里温柔了</div></div></div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">你每次都记得我不能吃什么</div></div></div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">还会给我带热水</div></div></div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">帮我修吉他</div></div></div>
+
+        <div class="timestamp">18:45</div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">这些都是应该的</div></div></div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">所以你对我很好呀</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><details class="voice-bubble"><summary><span class="voice-icon">三</span><span class="voice-duration">3"</span></summary><div class="voice-text">你才是对我最好的那个</div></details></div></div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">！！！</div></div></div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">学长你发语音了</div></div></div>
+
+        <div class="timestamp">18:46</div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><details class="retracted-bubble"><summary>撤回了一条消息</summary><div class="retracted-content">语音：你才是对我最好的那个</div></details></div></div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">哈哈哈哈哈</div></div></div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">撤回也听到了</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">手滑</div></div></div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">骗人</div></div></div>
+
+        <div class="timestamp">18:47</div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">学长你声音好苏</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">苏？</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">别用这种网络烂词</div></div></div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">那怎么说</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">好听</div></div></div>
+
+        <div class="timestamp">18:48</div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">这两个字就够了</div></div></div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">好吧</div></div></div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">那学长的声音很好听</div></div></div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">尤其是说我对你最好的时候</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">别得寸进尺</div></div></div>
+
+        <div class="timestamp">18:49</div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">嘿嘿</div></div></div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">不过学长你真的不介意我查手机吗</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">不介意</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">我手机里没什么不能让你看的</div></div></div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">那你手机密码为什么是你生日呀</div></div></div>
+
+        <div class="timestamp">18:50</div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">好记</div></div></div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">那为什么不是我生日</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">……</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">手机密码在我们认识之前就设好了</div></div></div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">那现在可以改了吧</div></div></div>
+
+        <div class="timestamp">18:51</div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">你想改成什么</div></div></div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">我生日</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">20051022？</div></div></div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">嗯！</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">好</div></div></div>
+
+        <div class="timestamp">18:52</div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">改了</div></div></div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">这么快？</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">[图片：手机设置界面显示密码已更改]</div></div></div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">！</div></div></div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">学长你真好</div></div></div>
+
+        <div class="timestamp">18:53</div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">这样你就不用担心查手机了</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">密码你肯定记得住</div></div></div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">嗯嗯</div></div></div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">不过我还是不会查的</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">为什么</div></div></div>
+
+        <div class="timestamp">18:54</div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">因为我相信你呀</div></div></div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">而且学长你都把密码改成我生日了</div></div></div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">我怎么舍得查</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">真拿你没办法</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><details class="voice-bubble"><summary><span class="voice-icon">三</span><span class="voice-duration">2"</span></summary><div class="voice-text">晚上想吃什么</div></details></div></div>
+
+        <div class="timestamp">18:55</div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">学长你又发语音了！</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">正常问问题</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">不准撤回</div></div></div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">好～</div></div></div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">我想吃学长做的咖喱饭</div></div></div>
+
+        <div class="timestamp">18:56</div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">行</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">晚上七点来407</div></div></div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">好的</div></div></div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">爱你♡</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><details class="voice-bubble"><summary><span class="voice-icon">三</span><span class="voice-duration">2"</span></summary><div class="voice-text">嗯，我也爱你</div></details></div></div>
+
+        <!-- ============ 场景6 咖喱 11.28 ============ -->
+        <div class="timestamp">2023.11.28 18:22</div>
+        <div class="interaction-event">しののめ拍了拍你"好感度-10000"</div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">你的电脑包忘拿了。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">[图片：407阳台上咕嘟咕嘟冒着热气的咖喱牛腩小锅，旁边放着陆临那只挂着粉色挂件的电脑包]</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">进电梯跑得比兔子还快，脑子也一起落在一楼大厅了？</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><details class="retracted-bubble"><summary>撤回了一条消息</summary><div class="retracted-content">语音 4"：バカ……剛才在一樓想說什麼，過來自己說清楚。</div></details></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">换好运动鞋没有？别又穿着那双破皮鞋下楼。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">还有八分钟六点半，苹果咖喱块已经化开了。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><details class="voice-bubble"><summary><span class="voice-icon">三</span><span class="voice-duration">5"</span></summary><div class="voice-text">从三楼公共自习室那边的连廊穿过来，男寝这边正门宿管刚泡了茶，别去撞枪口。</div></details></div></div>
+
+        <div class="timestamp">18:24</div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">好的！我马上到！嘿嘿我要吃我要吃~</div></div></div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">你又撤回什么了唔</div></div></div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">嘿嘿其实我看到了！我来啦-u-</div></div></div>
+        <div class="interaction-event">对方正在输入中</div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">那是语音，你怎么看到的。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">用眼睛听声波？H大物理学诺贝尔奖今年直接颁给你。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><details class="retracted-bubble"><summary>撤回了一条消息</summary><div class="retracted-content">法语语音 3"：Dépêche-toi, petite idiote. (快点过来，小笨蛋。)</div></details></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">知道为什么乌龟去参加派对被拦在门外吗？</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">因为那是一个没龟定的派对。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">而407有规定，迟到的人洗碗。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><details class="voice-bubble"><summary><span class="voice-icon">三</span><span class="voice-duration">4"</span></summary><div class="voice-text">脚后跟还疼就慢慢走，别在楼梯上摔下来，我在三楼连廊尽头等你。</div></details></div></div>
+
+        <div class="timestamp">18:26</div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">好消息这次听到那条撤回的语音了，坏消息我听不懂法语！！你欺负我！！好了我来了</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">单身二十二年的手速居然没拼过你的大拇指。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">那句法语的意思是，胡萝卜切得很大块，挑食的人今晚没饭吃。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><details class="retracted-bubble"><summary>撤回了一条消息</summary><div class="retracted-content">粤语语音 3"：傻猪嚟嘅，快啲行啦。(傻猪来的，快点走啦。)</div></details></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">知道为什么恐怖分子出门从来不坐电梯吗？</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">因为恐怖分子楼下住着恐怖分母。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">我已经听见你在走廊里拖着鞋底板走路的动静了。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><details class="voice-bubble"><summary><span class="voice-icon">三</span><span class="voice-duration">3"</span></summary><div class="voice-text">把手机收进兜里，抬头看路，防火门我替你拉开了。</div></details></div></div>
+
+        <!-- ============ 场景7 直播·分享 11.28 ============ -->
+        <div class="timestamp">2023.11.28 19:18</div>
+        <div class="interaction-event">"好感度-10000"</div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">安全进618了？</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">[图片：407书桌角落静静立着的浅粉色猫咪图案保温杯，杯盖旁压着一张折好的草稿纸]</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">某只树袋熊刚才只顾着讨人工安抚，把自己的移动水源落在了四零七。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">电脑包外侧口袋里塞了一盒草莓润喉糖，还有两片独立包装的医用硅胶护腕贴。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">洗完澡先把脚后跟的防水创可贴换了，练琴前把护腕贴戴上，别又磨破皮。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><details class="retracted-bubble"><summary>撤回了一条消息</summary><div class="retracted-content">[语音 4"：髪、すごく柔らかかった。もっとなでたい。（头发特别软，还想多摸一会儿。）]</div></details></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">刚才调试直播麦克风，不小心按到语音键了。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">知道为什么保温杯自己长不出腿走回六一八吗？因为它肚子里的茉莉花茶已经被你喝空了，没力气动弹。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><details class="voice-bubble"><summary><span class="voice-icon">三</span><span class="voice-duration">5"</span></summary><div class="voice-text">杯子我已经拿去阳台刷干净晾着了。今晚自己烧点温水喝，明早八点半图书馆三楼老位置，泡好热茶带给你。</div></details></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="share-bubble"><div class="share-content"><span class="share-title">電吉他降噪采樣_02_已校準.wav (点击下载最新降噪预设包)</span></div><div class="share-footer">来自 H大云盘分享</div></div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">顺便把你刚才偷瞄的音频滤波参数导出来了，导入效果器就能用。要是618太吵，戴好降噪耳塞早点睡，别半夜偷偷爬起来写代码。</div></div></div>
+
+        <div class="timestamp">19:21</div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">-u-好~谢谢学长~嘿嘿</div></div></div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">学长……还想摸明天就可以啦</div></div></div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><details class="retracted-bubble"><summary>撤回了一条消息</summary><div class="retracted-content">学长的怀里也好暖……</div></details></div></div>
+        <div class="interaction-event">对方正在输入中...</div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">刚才说调试麦克风误触，你也跟着信？</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">还有最后撤回的那七个字，我已经用两百度的动态视力截屏存档了。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">知道为什么鸵鸟遇到危险喜欢把头埋进沙子里吗？</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">因为它觉得只要自己看不见聊天记录，别人就也看不见。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><details class="retracted-bubble"><summary>撤回了一条消息</summary><div class="retracted-content">[语音 3"：J'ai déjà hâte d'être à demain.（我已经开始期待明天了。）]</div></details></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><details class="voice-bubble"><summary><span class="voice-icon">三</span><span class="voice-duration">6"</span></summary><div class="voice-text">明天早上八点半，要是你在图书馆敢把脑袋缩进卫衣帽子里躲着不让摸，我就把你刚撤回的那句话打印出来贴在四零七门上。</div></details></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">[图片：电脑显示器旁并排放着那只洗净倒扣在吸水垫上的浅粉色猫咪保温杯，旁边多了一盒刚拆封的便携装酒精棉片]</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">脚后跟的水泡要是破了，先拿碘伏消毒再贴创可贴，别直接沾水。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">明早想喝茉莉花茶还是红枣桂圆茶？给你三分钟考虑，选完乖乖去洗澡吹头发，吹风机必须开热风档。</div></div></div>
+
+        <div class="timestamp">19:46</div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">要红枣桂圆！嘿嘿，感觉甜甜的。其实我有的时候喝茉莉花茶会肚子疼，不知道为什么</div></div></div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">我洗完澡回来啦~嘿嘿</div></div></div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">[图片：只露出自己吹干的头发和一撮翘起的呆毛，没有露出脸的照片]</div></div></div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">学长你又欺负我听不懂法语！但是我知道Mi Amor</div></div></div>
+        <div class="interaction-event">对方正在输入中...</div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">茉莉花茶底是绿茶，性偏寒，你胃肠黏膜本来就脆弱，空腹喝或者胃受凉不肚子疼才怪。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">以后把茉莉花茶停了，明早开始全换成红枣桂圆茶，刚好温胃。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">还有，那句是西班牙语，不是法语。跨语种乱用词汇，外语学院的老师听了连夜给你发重修通知单。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><details class="retracted-bubble"><summary>撤回了一条消息</summary><div class="retracted-content">[语音 3"：知道那个词的意思还敢往我对话框里发，陆临，你胆子真是越来越肥了。]</div></details></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">知道为什么蒲公英种子吹干了会炸毛吗？因为它以为自己只要把脸藏起来，别人就认不出它是哪株草了。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><details class="voice-bubble"><summary><span class="voice-icon">三</span><span class="voice-duration">5"</span></summary><div class="voice-text">头发吹干了就别乱跑，头顶那撮翘起来的呆毛明天早上我亲自帮你按下去。</div></details></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">[图片：桌上已经摆好一盒撕开封口的红枣桂圆茶包，旁边压着一张写着"明早八点半，三楼靠窗第三张桌"的便签]</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">我要开直播了，戴好降噪耳塞早点钻被窝，脚后跟贴好创可贴别蹭到被子。晚安，小笨蛋。</div></div></div>
+
+        <div class="timestamp">19:50</div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">嘿嘿，我要去被窝戴耳机看！-u-</div></div></div>
+        <div class="interaction-event">"好感度-10000"</div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">我今晚主玩山冈凛，全是高频相位移动音效和电机爆炸声，你是打算拿我的直播间当摇篮曲，还是准备半夜在被窝里练心率？</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">要是真想看，把手机音量调到百分之二十以下，屏幕开启夜间护眼模式，手机支架支好，不许举着手机砸脸。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">知道为什么夜猫子到了早上都会变成圆滚滚的球吗？</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">因为它们熬夜熬成了熊猫，自带两个大黑眼圈，连起床气都是圆的。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><details class="retracted-bubble"><summary>撤回了一条消息</summary><div class="retracted-content">[语音 4"：乖啲啦，听话早啲训，听日仲想摸下你个头。（乖一点，听话早点睡，明天还想摸摸你的头。）]</div></details></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">[图片：电脑屏幕上OBS推流软件的音频设置界面，麦克风增益已被手动下调了五个分贝，旁边露出一角对准键盘与冷白手背的摄像头取景框]</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><details class="voice-bubble"><summary><span class="voice-icon">三</span><span class="voice-duration">6"</span></summary><div class="voice-text">我已经让陆非在后台把你的账号设成十点半自动踢出直播间了。最多准你看半小时，十点半一到必须闭眼睡觉，明早图书馆我要检查黑眼圈。</div></details></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">被子掖好，别把肩膀露在外面。おやすみ。</div></div></div>
+
+        <div class="timestamp">19:53</div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">呃啊，那我不看了（）</div></div></div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">学长下次我们玩pummel party！哎呀，我电脑都没啥游戏了，只有apex和pummel party，还有几个二游</div></div></div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">学长你也早点休息噢-u-</div></div></div>
+        <div class="interaction-event">对方正在输入中...</div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">算你识相，省得陆非在后台盯梢。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">Pummel Party？你是打算在迷你游戏里拿炸弹炸我，还是准备在岩浆图里把我推下去？</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">那游戏最少得四个人才热闹，这周末拉上陈泊和顾逢川一起开黑，正好让你见识一下四零七寝室内部是怎样通过电子游戏进行友好物理磨合的。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">至于你那台笔记本，C盘当时分得就不大，塞下Apex和几个二游的几十G更新包没弹窗报警已经是奇迹了。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">知道为什么移动硬盘从来不敢跟固态硬盘吵架吗？</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">因为它肚子里的坏水转得太慢，还没等读出脏话，固态已经把系统重启了。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="share-bubble"><div class="share-content"><span class="share-title">Steam家庭库共享邀请：来自 しののめ（包含双人成行、胡闹厨房2等84款游戏）</span></div><div class="share-footer">Steam客户端</div></div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">我的Steam库共享权限给你开了，里面有不需要占太多内存的双人解谜和派对游戏，明天带电脑来图书馆，顺便帮你清一下冗余缓存。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><details class="retracted-bubble"><summary>撤回了一条消息</summary><div class="retracted-content">[语音 4"：Fais de beaux rêves, ma petite marmotte.（做个好梦，我的小土拨鼠。）]</div></details></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><details class="voice-bubble"><summary><span class="voice-icon">三</span><span class="voice-duration">5"</span></summary><div class="voice-text">今晚只播一个半小时，十一点半前准时关机。把手机放远点，明早八点半见，晚安。</div></details></div></div>
+
+        <!-- ============ 场景8 深夜 11.29-11.30 ============ -->
+        <div class="timestamp">2023.11.29 20:45</div>
+        <div class="interaction-event">"好感度-10000"</div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">[图片：书桌角落放着一袋洗干净的砂糖橘和两盒未拆封的抹茶百奇，旁边压着一张写有分部积分易错公式的便签纸]</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">周俭刚买回来的砂糖橘，顺手挑了几个没籽的留给你。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">刚才送你到三楼连廊的时候走得急，你那件搭在我椅背上的粉色开衫忘拿了，我已经叠好放进衣柜下层了，明天过来吃飞鱼籽拌饭的时候顺便穿走。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><details class="retracted-bubble"><summary>撤回了一条消息</summary><div class="retracted-content">[语音 4"：さっきの「お兄ちゃん」、もう一回言ってくれない？（刚才那声"哥哥"，不能再叫一次吗？）]</div></details></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">手滑按到录音键了。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">知道为什么橘子从来不跟柠檬一起玩吗？因为橘子觉得柠檬太酸了，处不来。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><details class="voice-bubble"><summary><span class="voice-icon">三</span><span class="voice-duration">6"</span></summary><div class="voice-text">洗完澡记得把头发彻底吹干，别又顶着一脑袋湿气钻被窝，九点半我准时开播，你要是困了就戴着降噪耳塞直接睡。</div></details></div></div>
+
+        <div class="timestamp">20:47</div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><details class="voice-bubble"><summary><span class="voice-icon">三</span><span class="voice-duration">3"</span></summary><div class="voice-text">いいよ、お兄ちゃん大好き〜！</div></details></div></div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">好困哦，我准备睡觉了(´･_･`)</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">……</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><details class="retracted-bubble"><summary>撤回了一条消息</summary><div class="retracted-content">[语音 3"：……ずるいな、そんな言い方。（真狡猾啊，用这种语气说。）]</div></details></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">撩完就跑，扔下一句梦话就打算装睡？</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">刚才那条语音我已经录屏备份了，以后要是高数作业算错，我就当防空警报在自习室公放。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">被子拉到锁骨，手机拿远点充电，别压在枕头底下。加湿器记得调成微雾档，你喉咙还没完全好利索，受不了太干燥。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><details class="voice-bubble"><summary><span class="voice-icon">三</span><span class="voice-duration">5"</span></summary><div class="voice-text">快闭上眼睛睡吧，乖孩子。明早十点西门见。おやすみ。</div></details></div></div>
+
+        <div class="timestamp">20:49</div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><details class="voice-bubble"><summary><span class="voice-icon">三</span><span class="voice-duration">5"</span></summary><div class="voice-text">好き〜お兄ちゃんめっちゃ好き〜ちゃんと寝るね、いい夢が見られますよう-</div></details></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><details class="retracted-bubble"><summary>撤回了一条消息</summary><div class="retracted-content">[语音 4"：真系俾你食得死死嘅……快啲训啦。（真是被你吃得死死的……快点睡啦。）]</div></details></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">尾音拖那么长，是嘴里含着草莓软糖还没咽下去吗。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">还有，"めっちゃ"这种街头俚语少乱用，听起来像刚去便利店打劫完两箱魔芋爽回来的中二病。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">知道为什么晚上做梦千万不能睁着眼睛吗？因为睁着眼叫白日梦，夜间服务器不给结算积分。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><details class="voice-bubble"><summary><span class="voice-icon">三</span><span class="voice-duration">6"</span></summary><div class="voice-text">手缩回被窝里，不许再按语音键了。你也做个好梦，おやすみ、臨。</div></details></div></div>
+
+        <div class="timestamp">2023.11.30 01:42</div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">[表情：粉色软耳小猫两爪抱爱心蹭蹭撒娇]</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">？</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><details class="retracted-bubble"><summary>撤回了一条消息</summary><div class="retracted-content">[语音 3"：醒左定系发梦踢被啊？（醒了还是做梦踢被子了？）]</div></details></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">凌晨一点四十二分，梦游在被窝里给手机屏幕做胸外按压？</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">还是手机没拿稳直接拍脸上了。要是砸到鼻梁自己用凉毛巾敷一下，别闷在被子里揉。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">知道为什么深夜绝对不能乱发爱心吗？因为夜间服务器会把这种跳动信号识别成防空警报，隔壁床听见了会以为高数要提前摸底测验。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><details class="voice-bubble"><summary><span class="voice-icon">三</span><span class="voice-duration">5"</span></summary><div class="voice-text">没彻底醒就翻个身继续睡，要是醒了也立刻把屏幕熄掉，手塞回被窝，不准回消息了。</div></details></div></div>
+
+        <div class="timestamp">01:44</div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">我去怎么不小心碰到了</div></div></div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">有点偏头痛…疼醒了</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><details class="retracted-bubble"><summary>撤回了一条消息</summary><div class="retracted-content">[语音 4"：痛得好紧要？床头有无止痛药同温水？（痛得很厉害？床头有没有止痛药和温水？）]</div></details></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">把屏幕亮度拉到最低，或者戴上眼罩听语音，别盯着屏幕光源看，光线刺激会让神经跳得更厉害。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">是单侧太阳穴搏动性跳痛，还是整个后脑勺发紧？有没有想吐的感觉？</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">桌上有现成的布洛芬或者散利痛吗？要是空腹就千万别干吞强效药，会胃痉挛。保温杯里还有没有温水？先抿两小口润嗓子。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">知道偏头痛为什么叫偏头痛吗？因为偏偏挑人睡得最熟的时候来报到，专门欺负不听话早睡的小朋友。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">我这儿有温和的缓释胶囊和蒸汽热敷眼罩。要是难受得厉害或者手边没药，敲一个"1"，我现在套上外套去三楼防火门缝隙递给你，宿管查不到那边。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><details class="voice-bubble"><summary><span class="voice-icon">三</span><span class="voice-duration">8"</span></summary><div class="voice-text">别硬撑着。拇指揉一下耳后凹陷处的翳风穴，呼吸放慢，别把牙咬太紧。我在听，有事随时打字。</div></details></div></div>
+
+        <div class="timestamp">01:45</div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">报告我吃了布洛芬啦，我家里的哥哥之前给我寄了一整箱蒸汽眼罩-u-</div></div></div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">学长你为什么还没睡觉</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><details class="retracted-bubble"><summary>撤回了一条消息</summary><div class="retracted-content">[语音 3"：又喺边个哥哥啊，咁多哥哥嘅。（又是哪个哥哥啊，这么多哥哥的。）]</div></details></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">吃了药就好。缓释胶囊吸收起效需要三十到四十分钟，别指望刚咽下去血管神经就立刻立正给你站好。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">蒸汽眼罩挂耳绳拉松一点，别死死压在眼眶上，压迫眼球会让颅内压升高。还有，平时没听你提起过，大半夜倒是突然冒出个寄一整箱眼罩的哥哥。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">至于我为什么没睡。某人先是半夜发送跳动爱心信号，接着又宣告神经抽痛疼醒，我要是直接闭眼睡死，明早大概只能去三楼走廊捡一只缩成毛球的病号。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">知道为什么数羊治不好失眠吗？因为羊也有夜间时差，排队跳栅栏的时候经常在半空中为了谁踩了谁的蹄子当场打起来。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><details class="voice-bubble"><summary><span class="voice-icon">三</span><span class="voice-duration">7"</span></summary><div class="voice-text">报告收到了。手机推远一点，眼罩戴好，闭上眼睛等药效散开。我也关台灯了，听话快睡。</div></details></div></div>
+
+        <div class="timestamp">01:47</div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">那是我一个表哥啦，平时都不联系，知道我上大学了才关心一下</div></div></div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">干嘛，你吃醋呀o(｀ω´ )o</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><details class="retracted-bubble"><summary>撤回了一条消息</summary><div class="retracted-content">[语音 3"：边个得闲食你嘅醋，少自作多情。（谁有空吃你的醋，少自作多情。）]</div></details></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">表哥就表哥，谁管你哪个远房亲戚突然送温暖。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">还有，字典里吃醋指的是因嫉妒产生的情绪反应，而我刚才只是在进行常规的病患溯源与安全隐患核实，完全属于物理逻辑层面的严密推导。少往自己脸上贴金。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">知道山西老陈醋为什么必须避光密封陈酿吗？因为要是坛子没盖严实，里面的醋酸分子就会顺着网线飘进手机屏幕，让某些半夜偏头痛还不好好睡觉的小朋友产生剧烈幻觉。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">布洛芬现在应该开始水解吸收了。别仗着喝了热水就在这儿敲气鼓鼓的颜文字，颜文字要是能止痛，三甲医院早就全改成表情包批发市场了。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><details class="voice-bubble"><summary><span class="voice-icon">三</span><span class="voice-duration">6"</span></summary><div class="voice-text">眼罩拉好，别再盯着屏幕打字。五分钟之内要是后台还显示你在线，明早十点的飞鱼籽直接取消。听话，闭眼。</div></details></div></div>
+
+        <div class="timestamp">01:49</div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">はいはい、しののめ大好きwwおやすみ〜ちゅ（*＾3＾）</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><details class="retracted-bubble"><summary>撤回了一条消息</summary><div class="retracted-content">[语音 2"：笨蛋，边个准你乱咁锡㗎……（笨蛋，谁准你乱亲的……）]</div></details></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">……</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">散装日语讲上瘾了是吧。最后一个词的发音甚至像微波炉热牛奶热到最后漏出来的蜂鸣声，毫无标准音韵可言。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">知道为什么发高烧和神经痛的时候不能乱飞吻吗？因为空气动力学表明，病号呼出的气流会在半空形成冷凝涡流，精准倒灌回自己的被窝里，明天直接喜提鼻塞二周目。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">行了，别再敲键盘了。药效上来要是眼皮发沉就顺着睡，被子裹紧，别把胳膊伸出来晾在空气里受风。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><details class="voice-bubble"><summary><span class="voice-icon">三</span><span class="voice-duration">5"</span></summary><div class="voice-text">おやすみ、陸臨。明日の朝、ちゃんと起きて連絡すること。（晚安，陆临。明早睡醒记得联络。）</div></details></div></div>
+
+        <div class="timestamp">01:51</div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">我之前给自己起了个日文名叫のの！嘿嘿ww好不和你说啦</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><details class="retracted-bubble"><summary>撤回了一条消息</summary><div class="retracted-content">[语音 2"：のの？听起身似只细路仔或者幼犬。（のの？听起来像小屁孩或者幼犬。）]</div></details></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">叠词起名法。听上去像某种幼犬项圈上的小挂牌，或者幼儿识字绘本第一页印着的虚构生物。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">顺便核对一下拼写，"しののめ"中间正好嵌着两个"の"。某人起名字的时候直接从别人网名正中心抠走一半，顺手牵羊连版权税都免了。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">知道为什么字典里的叠词不能在半夜连续念三次吗？因为高频元音震颤会引发声波回溯，把刚咽下去的胶囊震成微小气泡，让原本打算退场睡觉的人平白多敲三分钟屏幕。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">宣告退场就彻底把屏幕按熄。要是两分钟后后台还显示在线状态，明天的飞鱼籽直接降级成水煮西兰花。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><details class="voice-bubble"><summary><span class="voice-icon">三</span><span class="voice-duration">4"</span></summary><div class="voice-text">おやすみ、のの。早く寝なさい。（晚安，のの。快点睡。）</div></details></div></div>
+
+        <div class="timestamp">01:54</div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">讨厌讨厌讨厌人家认识你之前就叫nono了！</div></div></div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">[表情：害羞揉脸小猫]</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><details class="retracted-bubble"><summary>撤回了一条消息</summary><div class="retracted-content">[语音 2"：讲咁多借口，咪又系秒瞓。（讲那么多借口，还不是秒睡。）]</div></details></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">连打三个讨厌，词汇匮乏程度基本等同于小学生吵架现场。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">认识我之前叫什么暂且不提，重点是现在这个发音已经被系统自动绑定在了六楼某个不肯乖乖睡觉的病号身上。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">知道为什么发完小猫表情包之后屏幕会突然安静吗？因为散热模块判定害羞释放的热能超标，为了避免把被窝里的人烤成焦糖布丁，主板已经强制切断了神经连接。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">……果然没声音了。药效上来倒是比谁倒头都快。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><details class="voice-bubble"><summary><span class="voice-icon">三</span><span class="voice-duration">5"</span></summary><div class="voice-text">好好睡吧。明早醒了要是太阳穴还发胀，不准硬撑，发消息给我。</div></details></div></div>
+
+        <!-- ============ 场景9 实验室含片 11.30 ============ -->
+        <div class="timestamp">2023.11.30 12:35</div>
+        <div class="interaction-event">しののめ拍了拍你</div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">一楼宿管站放了一板西地碘含片和一盒无糖脱脂纯牛奶，外包装写了你的名字。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><details class="retracted-bubble"><summary>撤回了一条消息</summary><div class="retracted-content">[语音 2"] 大丈夫？痛いの痛いの飛んでいけ。（还疼么？痛痛都飞走吧。）</div></details></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">刚才麦克风误触，不用点开。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><details class="voice-bubble"><summary><span class="voice-icon">三</span><span class="voice-duration">4"</span></summary><div class="voice-text">含片含服在舌尖下方，别用牙齿嚼，牛奶放常温再喝，听见没？</div></details></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">舌头被烫伤的猫为什么不能参加演讲比赛？因为一张嘴全是散装蒸汽波。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">定个闹钟睡半小时，下午两点前在连廊没看到体温和舌头复原汇报，晚上自习错题加倍。</div></div></div>
+
+        <div class="timestamp">12:38</div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">痛いの痛いの飛んでいけ(&gt;^ω^&lt;)</div></div></div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">学长，你周六下午有空一起出去玩吗( ；´Д｀)我想去商场的kkv买点日用品顺便逛一下</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">网速全用在抓撤回消息上了？五十音图还没背全，学念咒倒是挺快。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><details class="retracted-bubble"><summary>撤回了一条消息</summary><div class="retracted-content">[语音 2"] 听话就得啦，周六陪你去。（粤语）</div></details></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><details class="voice-bubble"><summary><span class="voice-icon">三</span><span class="voice-duration">5"</span></summary><div class="voice-text">KKV除了香薰和盲盒有什么正经日用品。周六下午没训练，两点西门等我，穿长款羽绒服。</div></details></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">去文创集合店买生活用品就像在物理实验室找炒菜锅，效率低下但有人乐此不疲。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">商场顶楼有一家评价不错的日料，买完东西带你吃刺身。现在先把含片含了，闭眼去睡午觉。</div></div></div>
+
+        <!-- ============ 场景10 副驾驶问卷 12.02 ============ -->
+        <div class="timestamp">2023.12.02 14:50</div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">想和我做夫妻发1想和我做恋人发2想和我做兄妹发3想和我做姐弟发4想和我做朋友发5想和我做陌生人发6想和我做❤️发7</div></div></div>
+        <div class="interaction-event">对方正在输入中</div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">人就坐在副驾驶，十厘米的空气阻力有这么大？</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><details class="retracted-bubble"><summary>撤回了一条消息</summary><div class="retracted-content">127</div></details></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">手滑打错。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">2</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><details class="voice-bubble"><summary><span class="voice-icon">三</span><span class="voice-duration">2"</span></summary><div class="voice-text">抬頭睇我。（粵語：抬頭看我。）</div></details></div></div>
+
+        <!-- ============ 场景11 带日期 12.02-12.03 ============ -->
+        <div class="timestamp">2023.12.02 21:18</div>
+        <div class="interaction-event">しののめ拍了拍你</div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">头发吹干了没有。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><details class="retracted-bubble"><summary>撤回了一条消息</summary><div class="retracted-content">[语音 2"] おやすみ、私の猫。</div></details></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">刚才按错麦克风了。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">水杯里装了温水没有。指甲油彻底干硬了再碰被子，蹭到布料上洗不掉。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">明早八点二十五分我在三食堂正门背风的地方等你。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="share-bubble"><div class="share-content"><span class="share-title">Twitch直播间：しののめ - 日服屠夫拉扯复盘练习</span></div><div class="share-footer">Twitch · 点击查看</div></div></div></div>
+
+        <div class="timestamp">21:20</div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">にゃにゃ(&gt;^ω^&lt;)</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">舌头捋直了再发消息。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><details class="retracted-bubble"><summary>撤回了一条消息</summary><div class="retracted-content">[语音 3"] 乖啲，早啲訓，聽朝帶你食飛魚籽。</div></details></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">猫科动物夜间视力良好，但没听说过哪种猫做微积分需要给爪子涂亮片。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><details class="voice-bubble"><summary><span class="voice-icon">三</span><span class="voice-duration">4"</span></summary><div class="voice-text">手机放远点，钻进被窝闭眼，听到没有？</div></details></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">我开播了，键盘杂音大，戴耳塞睡觉。明早八点二十五分见。</div></div></div>
+
+        <div class="timestamp">21:22</div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">好ww学长加油嘿嘿</div></div></div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><details class="retracted-bubble"><summary>撤回了一条消息</summary><div class="retracted-content">喜欢今天的亲亲……</div></details></div></div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">学长晚安uwu</div></div></div>
+        <div class="interaction-event">对方正在输入中...</div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">撤回也没用，后台全看得见。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><details class="retracted-bubble"><summary>撤回了一条消息</summary><div class="retracted-content">[语音 2"] 明早見面再繼續。</div></details></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">撩完就跑这招你倒是越用越熟练了。明天加算三道反常积分。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><details class="voice-bubble"><summary><span class="voice-icon">三</span><span class="voice-duration">3"</span></summary><div class="voice-text">快點訓，晚安。</div></details></div></div>
+
+        <div class="timestamp">2023.12.03 08:12</div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">学长早上好(´･_･`)魔芋爽头像的学长说你好晚才睡觉</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">陈泊寝室的网线看来是不想要了。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><details class="retracted-bubble"><summary>撤回了一条消息</summary><div class="retracted-content">[语音 2"] 早晨，傻豬。</div></details></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">他凌晨三点在寝室群抢一毛两分钱的拼团券，自己没睡醒开始散布谣言。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><details class="voice-bubble"><summary><span class="voice-icon">三</span><span class="voice-duration">4"</span></summary><div class="voice-text">围巾戴厚点，降温了。慢慢走过来，别踩着点在路上跑。</div></details></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">砂锅档口人不多，飞鱼籽豆腐煲已经下单了，加了双份溏心蛋。上二楼直接来右边最里面的暖气位。</div></div></div>
+
+        <div class="timestamp">08:14</div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">早神o(｀ω´ )o我马上到ww</div></div></div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">学长是不是喜欢我呀……</div></div></div>
+        <div class="interaction-event">对方正在输入中...</div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">早晨的发音错得离谱，扣五分。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><details class="retracted-bubble"><summary>撤回了一条消息</summary><div class="retracted-content">[语音 3"] 係啊，好中意你，滿意未？</div></details></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">昨天偷亲的是你，车里喊害羞不肯松手的也是你，现在反过来装侦探向嫌疑人要供词？</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><details class="voice-bubble"><summary><span class="voice-icon">三</span><span class="voice-duration">5"</span></summary><div class="voice-text">别在手机上装傻。跑上楼，当面看着我的眼睛再问一遍。</div></details></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">砂锅已经上桌了，汤还在沸。走快两步，冷风吹久了头又该痛。</div></div></div>
+
+        <!-- ============ 场景12 高数大物·转账 12.03-12.04 ============ -->
+        <div class="timestamp">2023.12.03 23:25</div>
+        <div class="interaction-event">しののめ拍了拍你</div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">回寝室把门反锁好，别贪凉不盖厚被子。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">桌上有保温壶，兑点温水喝半杯，刚才出了不少汗，不准喝凉的。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><details class="retracted-bubble"><summary>撤回了一条消息</summary><div class="retracted-content">[语音：身体还难受不难受……要是腰酸或者不舒服，马上给我发消息，听到没。]</div></details></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">手滑按错了。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><details class="voice-bubble"><summary><span class="voice-icon">三</span><span class="voice-duration">5"</span></summary><div class="voice-text">明早第一节课七点半我带早餐过去，红枣燕麦粥，不许偷偷爬起来去食堂排队。</div></details></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="transfer-bubble"><div class="transfer-header"><span class="transfer-to">转账给宝宝</span></div><div class="transfer-amount">¥ 520.00</div><div class="transfer-note">明天想吃什么自己买，别饿肚子</div></div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">收了，乖乖睡觉。</div></div></div>
+
+        <div class="timestamp">23:28</div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="transfer-received-bubble"><div class="received-header"><span class="received-icon">✓</span><span class="received-status">已收款</span></div><div class="received-amount">¥ 520.00</div></div></div></div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">谢谢哥哥(≧∇≦)</div></div></div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">人家…有点疼而已啦，我贴了你给的暖宝宝在腰后哦(*≧ω≦)</div></div></div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">（*＾3＾）哥哥晚安ww哥哥要梦到我哦</div></div></div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">话说叔叔阿姨的微信id怎么这么奇怪</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">暖宝宝别直接贴肉上，隔着睡衣贴，小心低温烫伤。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">疼就老实躺着，明早要是走不动路，我直接上楼接你。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><details class="retracted-bubble"><summary>撤回了一条消息</summary><div class="retracted-content">[语音：おやすみ、私の可愛い猫。明日会おう。]</div></details></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">关于网名，一个当年沉迷香港老电影自封梅丽，另一个看中华一番走火入魔改名刘昴星，秀恩爱秀了二十年。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><details class="voice-bubble"><summary><span class="voice-icon">三</span><span class="voice-duration">4"</span></summary><div class="voice-text">快闭眼睡觉，梦里的事情等睡醒再找我兑现。晚安。</div></details></div></div>
+
+        <div class="timestamp">2023.12.04 07:15</div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">学长早上好(´Д` )</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">醒了就别乱动，保温桶里的粥温着，十分钟后在楼下等。</div></div></div>
+
+        <div class="timestamp">07:28</div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">想和我做夫妻发1想和我做恋人发2想和我做兄妹发3想和我做姐弟发4想和我做朋友发5想和我做陌生人发6想和我做❤️发7</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><details class="retracted-bubble"><summary>撤回了一条消息</summary><div class="retracted-content">127</div></details></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">大清早就开始发这种钓鱼问卷，腰不酸了？</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><details class="voice-bubble"><summary><span class="voice-icon">三</span><span class="voice-duration">4"</span></summary><div class="voice-text">我在一楼大厅门口。围巾戴好，下来拿粥。</div></details></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">别磨蹭，凉了口感不好。</div></div></div>
+
+        <div class="timestamp">07:33</div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">你发77777777我马上到</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><details class="retracted-bubble"><summary>撤回了一条消息</summary><div class="retracted-content">77777777</div></details></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">发了。倒计时三分钟，看不见人影后果自负。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><details class="voice-bubble"><summary><span class="voice-icon">三</span><span class="voice-duration">5"</span></summary><div class="voice-text">走路慢点，别为了赶时间在楼梯上摔跤。</div></details></div></div>
+
+        <div class="timestamp">09:42</div>
+        <div class="interaction-event">しののめ拍了拍你</div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">机房暖气开得怎么样？腰还酸不酸。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><details class="retracted-bubble"><summary>撤回了一条消息</summary><div class="retracted-content">腰痛就靠着椅背，别逞强，乖乖听课。</div></details></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">[图片：大物阶梯教室后排的黑板板书，角落放着洗干净的空保温桶]</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><details class="voice-bubble"><summary><span class="voice-icon">三</span><span class="voice-duration">4"</span></summary><div class="voice-text">刚才路过自动贩卖机，买了热玉米汁，下课带给你。</div></details></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">中午西门那家鲜鱼汤要排队，我一下课就去占位，你在连廊避风处站着等我，别乱跑。</div></div></div>
+
+        <div class="timestamp">10:05</div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">玉米汁0u0！我的幼驯染就叫ゆみちゃんw</div></div></div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">とおるちゃんちゅ( ´ ▽ ` )</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">谐音梗扣二十分。另外，幼驯染也不能拿来榨汁。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><details class="retracted-bubble"><summary>撤回了一条消息</summary><div class="retracted-content">叫得挺顺口，中午当面亲。</div></details></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><details class="voice-bubble"><summary><span class="voice-icon">三</span><span class="voice-duration">2"</span></summary><div class="voice-text">……胆子越来越大了。</div></details></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">机房显示屏反光严重，屏幕亮度调暗点。打字别偷笑，隔壁同学以为你代码跑通了。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">玉米汁装在保温袋里，下课带过去还是烫的。专心听课，十一点三十五我下楼。</div></div></div>
+
+        <div class="timestamp">10:18</div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">哥哥我想让s和m面对面喝茶</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">？</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><details class="retracted-bubble"><summary>撤回了一条消息</summary><div class="retracted-content">腰刚好一点就皮，昨晚求饶的时候怎么不提这字母。</div></details></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><details class="voice-bubble"><summary><span class="voice-icon">三</span><span class="voice-duration">3"</span></summary><div class="voice-text">陆临同学，你敲键盘的时候最好先检查一下拼音输入法。</div></details></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">しののめ和柊マイ缩写确实是s和m。但凡你脑子里想的是别的，中午那道清蒸鲈鱼就换成苦瓜炒蛋。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">下课铃响了就收拾东西，我从五教过去七分钟。茶没有，热玉米汁管够。</div></div></div>
+
+        <div class="timestamp">10:20</div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">…我说的是steam</div></div></div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">卧槽しののめ和マイ的开头也确实是s和m……我服了</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">把单词的首尾字母拆开按在桌上喝茶，狡辩水平跟你的大物随堂测验差不多。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><details class="retracted-bubble"><summary>撤回了一条消息</summary><div class="retracted-content">越描越黑，等下见面看你怎么圆。</div></details></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><details class="voice-bubble"><summary><span class="voice-icon">三</span><span class="voice-duration">2"</span></summary><div class="voice-text">反应真慢。</div></details></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">五教下课铃响了。在连廊避风处站着别乱跑，走下楼梯就能看到我。</div></div></div>
+
+        <div class="timestamp">10:22</div>
+        <div class="msg-container user"><div class="msg user"><img src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="user" class="avatar"><div class="bubble">我们的名字居然也很符合……那个呢！（*＾3＾）</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">拼音首字母P和L。理科生眼里只有功率和电感，少把时间花在强行联想上。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><details class="retracted-bubble"><summary>撤回了一条消息</summary><div class="retracted-content">再发亲亲表情，等下在连廊转角直接收利息。</div></details></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><details class="voice-bubble"><summary><span class="voice-icon">三</span><span class="voice-duration">2"</span></summary><div class="voice-text">抬头，往右边看。</div></details></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">穿黑色长款大衣、手里拎着保温袋的就是我。把手揣好慢慢走下来，台阶滑。</div></div></div>
+
+        <!-- ============ 场景13 初雪 12.18 ============ -->
+        <div class="timestamp">2023.12.18 13:42</div>
+        <div class="interaction-event">しののめ拍了拍你“好感度-10000”</div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">不是说在客厅沙发上看动画片等我收拾厨房吗？怎么没声音了，又裹着毯子打瞌睡？</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">[图片：一只竖着长耳朵的白色垂耳兔玩偶，脖子上松松垮垮系着一条迷你浅灰色针织围巾，正端坐在餐桌边缘]</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">刚从玄关柜抽屉里翻出来的赠品，给它戴上倒是挺合身。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><details class="voice-bubble"><summary><span class="voice-icon">三</span><span class="voice-duration">5"</span></summary><div class="voice-text">阳台飘雪花了，比气象台预报的还早了十几分钟。</div></details></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><details class="retracted-bubble"><summary>撤回了一条消息</summary><div class="retracted-content">刚走过客厅看你缩在羊绒毯里露个小脑袋，可爱得想直接抱起来亲两口。</div></details></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">我把你的羽绒服和针织手套放暖气片旁边烘着了，等会儿穿暖和了再带你下楼。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">对了，雪花落到地上之前跟它妈妈说了什么？</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="bubble">它说：妈，我先下去给你探探路，顺便看看楼下那只南方小猫有没有穿秋裤。</div></div></div>
+        <div class="msg-container char"><div class="msg char"><img src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="char" class="avatar"><div class="transfer-bubble"><div class="transfer-header"><span class="transfer-to">转账给陆临</span></div><div class="transfer-amount">¥ 88.80</div><div class="transfer-note">初雪红包，买糖吃</div></div></div></div>
+
+      </div>
+      <div class="input-bar">
+        <input class="text-input" type="text" placeholder="发送消息…">
+        <button class="send-btn">发送</button>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>朋友圈 - しののめ</title>
+<style>
+  :root {
+    --blue: #576b95;
+    --gray: #9e9e9e;
+    --line: #f0f0f0;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #1f1f1f;
+    font-family: -apple-system, "PingFang SC", "Noto Sans SC", "Hiragino Sans GB", sans-serif;
+    display: flex;
+    justify-content: center;
+    padding: 30px 0;
+  }
+  .phone {
+    width: 420px;
+    background: #fff;
+    border-radius: 24px;
+    overflow: hidden;
+    box-shadow: 0 8px 40px rgba(0,0,0,.5);
+  }
+
+  /* ===== 封面头部 ===== */
+  .header {
+    position: relative;
+    height: 260px;
+  }
+  .header .bg {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  .header .name {
+    position: absolute;
+    right: 108px;
+    bottom: 22px;
+    color: #fff;
+    font-weight: 700;
+    font-size: 20px;
+    text-shadow: 0 1px 3px rgba(0,0,0,.7);
+  }
+  .header .avatar {
+    position: absolute;
+    right: 16px;
+    bottom: -28px;
+    width: 76px;
+    height: 76px;
+    border: 3px solid #fff;
+    border-radius: 10px;
+    object-fit: cover;
+    background: #eee;
+  }
+
+  /* ===== 签名 ===== */
+  .signature {
+    text-align: right;
+    padding: 40px 20px 10px;
+    color: #9e9e9e;
+    font-size: 13px;
+  }
+
+  /* ===== 动态列表 ===== */
+  .moments {
+    padding: 10px 20px 30px;
+  }
+  .post {
+    display: flex;
+    gap: 10px;
+    padding: 15px 0;
+    border-bottom: 1px solid #f0f0f0;
+  }
+  .post .p-avatar {
+    width: 44px;
+    height: 44px;
+    border-radius: 5px;
+    object-fit: cover;
+    background: #eee;
+    flex-shrink: 0;
+  }
+  .post .pc { flex: 1; min-width: 0; }
+  .post .un {
+    color: #576b95;
+    font-weight: 600;
+    font-size: 16px;
+    margin-bottom: 6px;
+  }
+  .post .txt {
+    font-size: 16px;
+    line-height: 1.5;
+    color: #1a1a1a;
+    margin-bottom: 10px;
+  }
+
+  /* 配图占位 */
+  .img-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 4px;
+    margin-bottom: 10px;
+  }
+  .img-grid .gi {
+    aspect-ratio: 1;
+    background: #f2f2f2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    color: #bbb;
+    font-size: 12px;
+    padding: 6px;
+    line-height: 1.4;
+  }
+
+  .meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: #b2b2b2;
+    font-size: 13px;
+  }
+  .meta .more {
+    background: #f7f7f7;
+    color: #576b95;
+    font-weight: 700;
+    padding: 0 6px;
+    border-radius: 3px;
+    line-height: 18px;
+    cursor: pointer;
+  }
+
+  /* ===== 点赞评论区 ===== */
+  .interactions {
+    background: #f7f7f7;
+    border-radius: 4px;
+    margin-top: 10px;
+    padding: 6px 10px;
+    font-size: 14px;
+    position: relative;
+  }
+  .interactions::before {
+    content: '';
+    position: absolute;
+    top: -6px;
+    left: 10px;
+    border: 6px solid transparent;
+    border-bottom-color: #f7f7f7;
+  }
+  .likes {
+    color: #576b95;
+    margin-bottom: 5px;
+    padding-bottom: 5px;
+    border-bottom: 1px solid #e5e5e5;
+  }
+  .likes::before {
+    content: '♡';
+    margin-right: 5px;
+  }
+  .comment { line-height: 1.5; margin-top: 3px; color: #1a1a1a; }
+  .comment b { color: #576b95; font-weight: 500; }
+
+  /* ===== 分享卡片 ===== */
+  .share {
+    background: #f3f3f3;
+    padding: 10px;
+    border-radius: 4px;
+    margin-bottom: 10px;
+    cursor: pointer;
+    display: block;
+  }
+  .share .t {
+    font-size: 16px;
+    color: #1a1a1a;
+    font-weight: 500;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    margin-bottom: 3px;
+  }
+  .share .s {
+    font-size: 13px;
+    color: #b2b2b2;
+  }
+</style>
+</head>
+<body>
+<div class="phone">
+
+  <!-- 封面 -->
+  <div class="header">
+    <img class="bg" src="https://pic1.imgdb.cn/item/68df867cc5157e1a885398c6.jpg" alt="背景">
+    <span class="name">しののめ</span>
+    <img class="avatar" src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="头像">
+  </div>
+
+  <!-- 签名 -->
+  <div class="signature">生きているだけで丸儲け</div>
+
+  <!-- 动态列表 -->
+  <div class="moments">
+
+    <!-- 动态：圣诞袜 + 免写高数券 -->
+    <div class="post">
+      <img class="p-avatar" src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="头像">
+      <div class="pc">
+        <div class="un">しののめ</div>
+        <div class="txt">某位十九岁的大朋友睡前义正辞严地表示绝对不信圣诞老人，然后一沾枕头五分钟内睡得人事不知。希望明早某人拆袜子的时候，还能保持今晚的嘴硬水平。</div>
+        <div class="img-grid">
+          <div class="gi">[床头黄铜壁灯架上挂着一只被塞得鼓鼓囊囊的红色圣诞袜，开口处露出一角深蓝色丝绒礼盒与草莓软糖包装]</div>
+          <div class="gi">[手写硬卡纸特写：十九岁大朋友专属：无条件免写高数卷一次券（签发人：圣诞老人兼家属裴亦惜）]</div>
+        </div>
+        <div class="meta">
+          <span>2023.12.25 01:18｜已屏蔽 柊マイ</span>
+          <span class="more">··</span>
+        </div>
+        <div class="interactions">
+          <div class="likes">快乐周梅丽、幸福刘昴星、我有魔芋爽、海阔天空、请输入文本、烂橙子、路飞来了、Café Noir等共36人点赞了</div>
+          <div class="comment"><b>快乐周梅丽：</b>哇，阿彻识得做圣诞老人哄女仔啦！张免写高数券系咪真㗎？我都想要张免教课券！</div>
+          <div class="comment"><b>幸福刘昴星</b> 回复 <b>快乐周梅丽</b>：老婆，明天你的班我帮你请好假了，你在酒店睡到自然醒就行❤️</div>
+          <div class="comment"><b>しののめ</b> 回复 <b>快乐周梅丽</b>：您二位在半岛酒店专心过二人世界，少看手机。</div>
+          <div class="comment"><b>我有魔芋爽：</b>？？？屏蔽嫂子给我们喂狗粮是吧！裴哥，我也18岁，我今天也特别乖，为什么我的床头只有陈泊的臭袜子？能给我签发一张高数免挂科券吗义父！</div>
+          <div class="comment"><b>しののめ</b> 回复 <b>我有魔芋爽</b>：因为圣诞老人不给企鹅送礼物，去把你的高数课本翻开。</div>
+          <div class="comment"><b>请输入文本：</b>大半夜一点多还在搞儿童节仪式感，裴亦惜你恋爱脑晚期没救了，建议直接转入脑科重症监护室。</div>
+          <div class="comment"><b>しののめ</b> 回复 <b>请输入文本</b>：比半夜一点还在单身刷手机的人健康得多。</div>
+          <div class="comment"><b>烂橙子：</b>这红袜子丑得跟我店里擦地抹布有一拼，你居然能忍受这种配色挂在床头，爱情真是让人瞎得彻底。</div>
+          <div class="comment"><b>しののめ</b> 回复 <b>烂橙子</b>：Wargrave说你的审美还停留在上世纪故事会插图水平。</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 动态：小兔围裙鸡汤 -->
+    <div class="post">
+      <img class="p-avatar" src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="头像">
+      <div class="pc">
+        <div class="un">しののめ</div>
+        <div class="txt">宵夜投喂完毕。家属亲赐的战袍，透气性良好，就是口袋有点浅，装不下太多券。</div>
+        <div class="img-grid">
+          <div class="gi">[厨房暖光下，男人修长的手指端着一碗金黄浓郁的花胶鸡汤，身前系着印有厨师帽小兔和"老大我饿了！"气泡的香芋色围裙正面]</div>
+          <div class="gi">[香芋色小兔围裙侧面特写，口袋边缘微微鼓起，露出一角手绘的"和好券"]</div>
+          <div class="gi">[客厅茶几上两只喝得干干净净的空汤碗，旁边搭着一条手工织的刺绣长围巾]</div>
+        </div>
+        <div class="meta">
+          <span>2023.12.24 23:45｜公开</span>
+          <span class="more">··</span>
+        </div>
+        <div class="interactions">
+          <div class="likes">快乐周梅丽、幸福刘昴星、我有魔芋爽、海阔天空、路飞来了、Café Noir等共52人点赞了</div>
+          <div class="comment"><b>路飞来了：</b>卧槽，要不是看见你手上那块茧子，我死都不信这是裴哥！香芋紫小兔子围裙哈哈哈哈哈哈我已经截图保存当传家宝了！</div>
+          <div class="comment"><b>しののめ</b> 回复 <b>路飞来了</b>：截清楚点，这是全球限量一件。</div>
+          <div class="comment"><b>海阔天空：</b>围裙很可爱，花胶鸡汤看着火候正好，冬夜喝很养胃。</div>
+          <div class="comment"><b>しののめ</b> 回复 <b>海阔天空</b>：谢了，老爸炖的底汤，我负责热。</div>
+          <div class="comment"><b>Café Noir：</b>Mon Dieu！彻，说的"家庭煮夫"吗？那只小兔子和你平时的黑色衣服反差太大了，不过非常棒！Joyeux Noël！</div>
+          <div class="comment"><b>しののめ</b> 回复 <b>Café Noir</b>：Merci. 祝你圣诞快乐。</div>
+          <div class="comment"><b>我有魔芋爽：</b>报告嫂子！裴哥下午在寝室试穿这件围裙的时候照了三分钟镜子！</div>
+          <div class="comment"><b>しののめ</b> 回复 <b>我有魔芋爽</b>：造谣是要负法律责任的，那是两秒。</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 动态：名师出高徒 + 高数分享 -->
+    <div class="post">
+      <img class="p-avatar" src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="头像">
+      <div class="pc">
+        <div class="un">しののめ</div>
+        <div class="txt">名师出高徒。虽然徒弟的企鹅手短了一点，缩在袖子里连碗都端不稳，但幽默感已经超越这个寝室99%的物种了。</div>
+        <div class="share">
+          <div class="t">高数期末重点：泰勒公式与洛必达法则的十种常见错题剖析</div>
+          <div class="s">H大理学学部学习资料库</div>
+        </div>
+        <div class="meta">
+          <span>2023.12.24 23:12｜公开</span>
+          <span class="more">··</span>
+        </div>
+        <div class="interactions">
+          <div class="likes">我有魔芋爽、请输入文本、海阔天空、快乐周梅丽等共29人点赞了</div>
+          <div class="comment"><b>我有魔芋爽：</b>被排除在人类物种之外的我本人表示不服！而且为什么秀恩爱还要夹带高数私货啊！大晚上看到泰勒公式我直接做噩梦！</div>
+          <div class="comment"><b>请输入文本：</b>你们两个是我见过最般配的脑科病友，一个patient一个真传弟子，绝配，锁死，钥匙吞了。</div>
+          <div class="comment"><b>しののめ</b> 回复 <b>请输入文本</b>：借你吉言。</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 动态：柊マイ patient 谐音梗 -->
+    <div class="post">
+      <img class="p-avatar" src="https://picui.ogmua.cn/s1/2026/11/11/6af473c5c8d9c.webp" alt="头像">
+      <div class="pc">
+        <div class="un">柊マイ</div>
+        <div class="txt">我发现裴亦惜的舍友叫他裴神的时候，他都很有耐心回答他们，因为他们叫裴亦惜patient😋</div>
+        <div class="meta">
+          <span>2023.12.24 23:06｜公开</span>
+          <span class="more">··</span>
+        </div>
+        <div class="interactions">
+          <div class="likes">しののめ、快乐周梅丽、幸福刘昴星、我有魔芋爽、请输入文本、海阔天空、小何、路飞来了、Café Noir等共48人点赞了</div>
+          <div class="comment"><b>しののめ：</b>那是因为patient本身也有病人的意思。面对智力发育迟缓的室友，正常人都得保持一点人道耐心。至于某位偷偷躲在被窝里发朋友圈的小朋友，手机交出来，准备出来喝汤。</div>
+          <div class="comment"><b>我有魔芋爽：</b>？？？嫂子！你这谐音梗绝对是得了裴哥的真传！我宣布你就是裴亦惜关门大弟子，青出于蓝而胜于蓝！</div>
+          <div class="comment"><b>我有魔芋爽</b> 回复 <b>しののめ</b>：等等，我刚夸完嫂子就看到裴哥这句人身攻击，到底谁智力发育迟缓啊！你平时回答我们哪里有耐心了，每次都是三个字以内打发我们！</div>
+          <div class="comment"><b>请输入文本：</b>@我有魔芋爽 别挣扎了，人家小情侣拿你当调情工具人呢。不过陆学妹这个冷笑话水平确实深得裴亦惜真传，建议明天直接去挂脑科专家号，两位一起看诊还能打个折。</div>
+          <div class="comment"><b>しののめ</b> 回复 <b>请输入文本</b>：医药费从你下个月的零花钱里扣。</div>
+          <div class="comment"><b>快乐周梅丽：</b>哈哈哈哈哈哈临临太可爱了吧！阿彻平时在家闷声不响，原来在学校被叫patient啊！妈妈笑得面膜都裂开了！</div>
+          <div class="comment"><b>幸福刘昴星：</b>临临这个英文谐音太妙了！比阿彻平时讲的那些冷冰冰的笑话好笑一万倍！明天爸爸给你做大餐奖励！</div>
+          <div class="comment"><b>しののめ</b> 回复 <b>幸福刘昴星</b>：爸，双标也不用这么明显。</div>
+          <div class="comment"><b>小何：</b>救命啊临临，你居然也被传染了这种冷笑话病毒！不过看到你这么开心我就放心啦，平安夜快乐宝！</div>
+          <div class="comment"><b>海阔天空：</b>原来如此，怪不得平时问他问题他都会回。祝你们平安夜愉快，夜深了注意保暖。</div>
+          <div class="comment"><b>路飞来了：</b>哈哈哈哈哈哈神特么patient，以后直播间弹幕刷裴神我都没法直视了，全是病友交流会是吧！</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 动态一：撞门事件 -->
+    <div class="post">
+      <img class="p-avatar" src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="头像">
+      <div class="pc">
+        <div class="un">しののめ</div>
+        <div class="txt">体育馆侧门的玻璃感应门贴了黄色防撞条。贴得挺清晰的，但好像对走神的人类没什么警示效果。</div>
+        <div class="img-grid">
+          <div class="gi">[图片：体育馆侧门贴着明黄警示带的透明玻璃门，地面反着夕阳光]</div>
+        </div>
+        <div class="meta">
+          <span>10分钟前｜公开</span>
+          <span class="more">··</span>
+        </div>
+        <div class="interactions">
+          <div class="likes">快乐周梅丽、路飞来了、我有魔芋爽等共11人点赞了</div>
+          <div class="comment"><b>我有魔芋爽：</b>？？？谁撞了？裴哥你撞了？两米巨人也有今天？</div>
+          <div class="comment"><b>しののめ</b> 回复 <b>我有魔芋爽</b>：是我撞的话碎的就该是门了。</div>
+          <div class="comment"><b>路飞来了：</b>哈哈哈哈哈草，今天下午在馆里就听说有人直愣愣撞玻璃上了，动静隔两个羽毛球场都能听见，原来是真的啊！</div>
+          <div class="comment"><b>烂橙子：</b>无聊，不如来我店里看看我新纹的皮卡丘。</div>
+          <div class="comment"><b>快乐周梅丽：</b>仔啊，攀完岩记得拉伸，别只顾着拍照发圈！今晚回家吃饭不？你爸做了豉汁蒸排骨！</div>
+          <div class="comment"><b>しののめ</b> 回复 <b>快乐周梅丽</b>：不回，外卖柜拿了刺身。</div>
+          <div class="comment"><b>Café Noir：</b>从光学角度来看，高透光率的玻璃在缺乏参照物时确实容易引发视觉忽视。</div>
+          <div class="comment"><b>请输入文本：</b>你闲得连门都要发一条。</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 动态二：情侣征税吐槽 -->
+    <div class="post">
+      <img class="p-avatar" src="https://pic1.imgdb.cn/item/691ca5cd3203f7be0013e56e.jpg" alt="头像">
+      <div class="pc">
+        <div class="un">しののめ</div>
+        <div class="txt">建议给在公共场合旁若无人亲热的情侣增设一项重税，税款用于资助单身人士的心理健康建设。</div>
+        <div class="meta">
+          <span>2小时前｜公开</span>
+          <span class="more">··</span>
+        </div>
+        <div class="interactions">
+          <div class="likes">请输入文本、烂橙子 等共41人觉得很赞</div>
+          <div class="comment"><b>我有魔芋爽：</b>附议！我第一个报名领补贴！</div>
+          <div class="comment"><b>快乐周梅丽：</b>你爸说他双手双脚支持！</div>
+          <div class="comment"><b>幸福刘昴星：</b>老婆说得对！老婆亲亲(づ￣ ³￣)づ</div>
+          <div class="comment"><b>しののめ</b> 回复 <b>快乐周梅丽</b>：？</div>
+          <div class="comment"><b>しののめ</b> 回复 <b>幸福刘昴星</b>：？</div>
+          <div class="comment"><b>请输入文本：</b>然后你家就因此破产了。</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+</body>
+</html>

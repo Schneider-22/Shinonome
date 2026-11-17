@@ -33,6 +33,27 @@
     transform: rotate(5deg) scale(1.05);
 }
 
+/* 右下角可点击返回入口（覆盖在装饰贴图之上），点击跳回 Phone.html */
+.diary .back-link {
+    position: absolute;
+    bottom: 1px;
+    right: 1px;
+    width: 100px;
+    height: 100px;
+    z-index: 2;
+    display: block;
+}
+.diary .back-link img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
+    transition: transform 0.3s ease;
+}
+.diary .back-link:hover img {
+    transform: rotate(5deg) scale(1.05);
+}
+
 /* 头部 */
 .diary .header {
     display: flex;
@@ -72,6 +93,7 @@
 }
 </style>
 <div class="diary">
+    <a class="back-link" href="Phone.html" title="爱你"><img src="https://pic1.imgdb.cn/item/68e03a3dc5157e1a8854c0ef.png" alt="爱你"></a>
     <div class="header">
         <span class="mood">随笔：论视野盲区与恒星引力</span>
         <span class="date">冬夜，京都岚山，雪霁</span>

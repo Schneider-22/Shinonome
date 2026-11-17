@@ -87,6 +87,26 @@
     color: #666;
     margin-top: 2px;
   }
+  /* 右上角三文鱼贴图入口，点击跳转 love.html */
+  .shell .header .salmon-link {
+    position: absolute;
+    top: 6px;
+    right: 10px;
+    display: block;
+    width: 34px;
+    height: 34px;
+    z-index: 5;
+  }
+  .shell .header .salmon-link img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
+    transition: transform 0.3s ease;
+  }
+  .shell .header .salmon-link:hover img {
+    transform: rotate(8deg) scale(1.12);
+  }
   .shell .input-bar {
     position: absolute;
     bottom: 0;
@@ -371,6 +391,7 @@
           <div class="contact-name">しののめ | 备注：裴亦惜</div>
           <div class="contact-status">状态：在线</div>
         </div>
+        <a class="salmon-link" href="love.html" title="这就是爱吗"><img src="https://pic1.imgdb.cn/item/68e03a3dc5157e1a8854c0ef.png" alt="这就是爱吗"></a>
       </div>
       <div class="chat-area">
 

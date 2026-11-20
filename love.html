@@ -1,19 +1,27 @@
+<body style ="background-color: #000000; color: #e6e3dc; font-family: 'Noto Sans SC', sans-serif;">
 <style>
 /* ========== 日记模块 (Diary Module) 样式 — 来自 memory.html 的 .diary 美化 ========== */
 .diary {
     font-family: 'Noto Sans SC', sans-serif;
-    background-color: #f7f6f2;
-    color: #333;
+    background-color: #262522;
+    color: #e6e3dc;
     max-width: 700px;
     margin: 20px auto;
-    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 5px 20px rgba(227, 217, 217, 0.45);
     border-radius: 8px;
-    border: 1px solid #e0dccc;
+    border: 1px solid #000000;
     position: relative;
     overflow: hidden;
     padding: 30px 35px;
 }
-
+.dialogue {
+  font-weight: bold;
+  color: transparent;
+  background-clip: text;
+  -webkit-background-clip: text;
+  background-image: linear-gradient(to right,
+      #96f2d087 10%, #4fc3c780 30%, #00e5ff76 50%, #b3e5fc73 70%, #81d4fa71 90%);
+}
 /* 右下角装饰 */
 .diary::after {
     content: '';
@@ -86,11 +94,12 @@
 .diary .text {
     margin-top: 18px;
     line-height: 1.9;
-    color: #454545;
+    color: #a3a3a3;
     font-size: 16px;
     white-space: pre-wrap;
     text-align: justify;
 }
+
 </style>
 <div class="diary">
     <a class="back-link" href="Phone.html" title="爱你"><img src="https://pic1.imgdb.cn/item/68e03a3dc5157e1a8854c0ef.png" alt="爱你"></a>

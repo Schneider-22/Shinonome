@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>東雲徹のノート</title>
+<style>
+/* ========== 备忘录 Note 页面 — 风格融合 love.html 纸张质感 + 极简留白 ========== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    background-color: #1c1b1a;
+    color: #e6e3dc;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+}
+
+.note {
+    width: 100%;
+    max-width: 720px;
+    min-height: 520px;
+    background-color: #262522;
+    border: 1px solid #3a3834;
+    border-radius: 8px;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.45);
+    padding: 30px 35px;
+    position: relative;
+    overflow: hidden;
+}
+
+/* 左上角胶囊标签 */
+.note .mood {
+    display: inline-block;
+    font-size: 14px;
+    font-weight: 700;
+    color: #aebcda;
+    background-color: #333b4d;
+    padding: 6px 16px;
+    border-radius: 16px;
+}
+
+/* 标签下方的分隔线 */
+.note .divider {
+    margin-top: 14px;
+    border-bottom: 1px solid #3a3834;
+}
+
+/* 中间备忘录卡片列表 */
+.note .list {
+    margin-top: 28px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+/* 小方框卡片 */
+.note .item {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+    background-color: #2b2a27;
+    border: 1px solid #3a3834;
+    border-radius: 8px;
+    padding: 14px 18px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+    transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+}
+
+.note .item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.45);
+    border-color: #4a4842;
+}
+
+/* 卡片左侧标题 */
+.note .item .title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #e6e3dc;
+    line-height: 1.6;
+}
+
+/* 标题下方的小号灰色副标题 */
+.note .item .subtitle {
+    display: block;
+    margin-top: 2px;
+    font-size: 12px;
+    font-weight: 400;
+    color: #8a857b;
+    line-height: 1.5;
+}
+
+/* 右下角装饰 */
+.note::after {
+    content: '';
+    position: absolute;
+    bottom: 1px;
+    right: 1px;
+    width: 100px;
+    height: 100px;
+    background-image: url('https://pic1.imgdb.cn/item/68e03a3dc5157e1a8854c0ef.png');
+    background-size: contain;
+    background-repeat: no-repeat;
+    pointer-events: none;
+    transition: transform 0.3s ease;
+}
+
+.note:hover::after {
+    transform: rotate(5deg) scale(1.05);
+}
+</style>
+</head>
+<body>
+<div class="note">
+    <span class="mood">東雲徹のノート</span>
+    <div class="divider"></div>
+
+    <div class="list">
+        <a class="item" href="love.html" title="什么是爱">
+            <span class="title">💌什么是爱</span>
+            <span class="subtitle">写于春假京都旅行</span>
+        </a>
+    </div>
+    <div class="list">
+        <a class="item" href="teacher1.html" title="裴老师和陆老师">
+            <span class="title">裴老师和陆老师</span>
+            <span class="subtitle">“裴老师，早上好” “早，陆老师”</span>
+        </a>
+    </div>
+
+</div>
+</body>
+</html>

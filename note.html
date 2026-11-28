@@ -98,22 +98,24 @@ body {
     line-height: 1.5;
 }
 
-/* 右下角装饰 */
-.note::after {
-    content: '';
+/* 右下角可点击返回入口（三文鱼装饰图，点击跳回 phone.html） */
+.note .back-link {
     position: absolute;
     bottom: 1px;
     right: 1px;
     width: 100px;
     height: 100px;
-    background-image: url('https://pic1.imgdb.cn/item/68e03a3dc5157e1a8854c0ef.png');
-    background-size: contain;
-    background-repeat: no-repeat;
-    pointer-events: none;
+    z-index: 2;
+    display: block;
+}
+.note .back-link img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
     transition: transform 0.3s ease;
 }
-
-.note:hover::after {
+.note .back-link:hover img {
     transform: rotate(5deg) scale(1.05);
 }
 </style>
@@ -135,7 +137,13 @@ body {
             <span class="subtitle">“裴老师，早上好” “早，陆老师”</span>
         </a>
     </div>
-
+        <div class="list">
+        <a class="item" href="gaokao.html" title="裴亦惜高考成绩单">
+            <span class="title">全国高等学校统一招生考试成绩单</span>
+            <span class="subtitle">查询考生裴亦惜成绩单</span>
+        </a>
+    </div>
+<a class="back-link" href="phone.html" title="爱你"><img src="https://pic1.imgdb.cn/item/68e03a3dc5157e1a8854c0ef.png" alt="爱你"></a>
 </div>
 </body>
 </html>
